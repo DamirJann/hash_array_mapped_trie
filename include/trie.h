@@ -1,16 +1,20 @@
 #include <cstdint>
 #include <string>
 #include <vector>
+#include <math.h>
 
 using namespace std;
 
-#define BRANCH_FACTOR 4
+#define HASH_PIECE_MAX_LEN 5
+#define BRANCH_FACTOR 32
 
 struct bitmap {
-    int32_t data;
-    bool is_set(int) const;
-    void set(int);
-} bitmap;
+    uint32_t data;
+
+    bool is_set(uint8_t) const;
+
+    void set(uint8_t);
+};
 
 enum NodeType {
     C_NODE,
@@ -34,22 +38,22 @@ public:
 
 class CNode : public Node {
 public:
-    struct bitmap bmp;
-    vector<Node *> array;
-
+    friend class TestCNode;
     CNode() : Node() {
         type = C_NODE;
         bmp = {0};
     }
-
-    CNode(SNode* node): CNode(){
+    CNode(SNode *node) : CNode() {
         addNode(node);
     }
 
-    // TODO optimize it
-    void addNode(SNode*);
+    void addNode(SNode *);
     void replace_child_s_node_to_c_node(int);
-    Node* getNodeByPath(int);
+    Node *getNode(uint8_t);
+private:
+    bitmap bmp;
+    vector<Node *> array;
+    uint8_t get_array_index_by_bmp(uint8_t) const;
 };
 
 class Trie {
@@ -67,7 +71,7 @@ private:
 
     bool remove(int hash);
 
-    static bool insert(int hash, string k, int v, CNode *node, int level);
+    static bool insert(uint64_t hash, string k, int v, CNode *node, uint8_t level);
 };
 
 struct value_result {
@@ -75,7 +79,7 @@ struct value_result {
     bool is_found;
 };
 
-value_result new_value_result(int value) {
+inline value_result new_value_result(int value) {
     return (value_result) {.value = value, .is_found = true};
 }
 
