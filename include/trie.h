@@ -4,7 +4,13 @@
 
 using namespace std;
 
-#define BRANCH_FACTOR 2
+#define BRANCH_FACTOR 4
+
+struct bitmap {
+    int32_t data;
+    bool is_set(int) const;
+    void set(int);
+} bitmap;
 
 enum NodeType {
     C_NODE,
@@ -16,6 +22,36 @@ public:
     NodeType type;
 };
 
+class SNode : public Node {
+public:
+    string key;
+    int value;
+
+    SNode() : Node() {
+        this->type = S_NODE;
+    }
+};
+
+class CNode : public Node {
+public:
+    struct bitmap bmp;
+    vector<Node *> array;
+
+    CNode() : Node() {
+        type = C_NODE;
+        bmp = {0};
+    }
+
+    CNode(SNode* node): CNode(){
+        addNode(node);
+    }
+
+    // TODO optimize it
+    void addNode(SNode*);
+    void replace_child_s_node_to_c_node(int);
+    Node* getNodeByPath(int);
+};
+
 class Trie {
 private:
     Node *root;
@@ -24,40 +60,14 @@ public:
 
     bool remove(string k);
 
-    bool insert(string k, int value);
+    bool insert(string k, int v);
 
 private:
     bool lookup(int hash);
 
     bool remove(int hash);
 
-    static bool insert(int hash, int value, Node *currNode, int level);
-};
-
-
-typedef struct {
-    int32_t data;
-
-    int get_array_index(int bitmap_index);
-} bitmap;
-
-class CNode : public Node {
-public:
-    bitmap bmp;
-    vector<Node *> array;
-    CNode(): Node(){
-        type = C_NODE;
-        bmp = {0};
-    }
-};
-
-class SNode : public Node {
-public:
-    string key;
-    int value
-    SNode() : Node(){
-        this->type = S_NODE;
-    }
+    static bool insert(int hash, string k, int v, CNode *node, int level);
 };
 
 struct value_result {
