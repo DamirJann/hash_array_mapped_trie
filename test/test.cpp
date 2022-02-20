@@ -11,6 +11,7 @@
 
 TEST(BITMAP, HAPPY_FLOW__IS_SET_TRUE_AT_THE_BEGINNING_OF_BITMAP) {
     bitmap bmp = {0b1110010011};
+    ASSERT_EQ(0, 1);
     ASSERT_EQ(bmp.is_set(0), true);
 }
 
