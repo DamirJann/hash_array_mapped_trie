@@ -76,16 +76,3 @@ private:
 
     static bool insert(uint64_t hash, string k, int v, CNode *node, uint8_t level);
 };
-
-struct value_result {
-    int value;
-    bool is_found;
-};
-
-inline value_result new_value_result(int value) {
-    return (value_result) {.value = value, .is_found = true};
-}
-
-const value_result value_not_found{
-        .is_found = true
-};

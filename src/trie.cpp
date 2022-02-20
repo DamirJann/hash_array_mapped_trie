@@ -14,10 +14,10 @@ void bitmap::set(uint8_t pos) {
     this->data = this->data | (1 << pos);
 }
 
-int get_hash(string k) {
-    int hash = 0;
-    for (int i = 0; i < k.size(); i++) {
-        hash += k[i] * i;
+uint64_t get_hash(string k) {
+    uint64_t hash = 0;
+    for (size_t i = 0; i < k.size(); i++) {
+        hash +=  k[i] * i;
     }
     return hash % 10;
 }
