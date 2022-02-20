@@ -5,6 +5,7 @@ set(CMAKE_CXX_STANDARD 14)
 
 add_subdirectory(google_tests/lib/googletest googletests)
 
+
 # MAIN TARGET
 add_executable(
         hash_array_mapped_trie
@@ -14,7 +15,7 @@ add_executable(
 # TEST TARGET
 add_executable(
         test_list
-        test1/test.cpp src/utils.cpp src/trie.cpp
+        test/test.cpp src/utils.cpp src/trie.cpp
 )
 
 

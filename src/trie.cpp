@@ -30,10 +30,9 @@ SNode *create_s_node(string k, int v) {
 
 
 uint8_t CNode::get_array_index_by_bmp(uint8_t pos) const {
-//    return __popcount(
-//            ((1 << pos) - 1) & bmp.data
-//    );
-    return 0 + pos;
+    return __builtin_popcount(
+            ((1 << pos) - 1) & bmp.data
+    );
 }
 
 void CNode::addNode(SNode *node) {
