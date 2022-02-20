@@ -1,7 +1,7 @@
 #include "../include/trie.h"
 #include "../include/utils.h"
-#include <bit>
 #include <bitset>
+#include <bit>
 
 using namespace std;
 

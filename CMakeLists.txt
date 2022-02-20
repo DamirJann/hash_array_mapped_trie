@@ -23,14 +23,9 @@ target_link_libraries(
         gtest gtest_main
 )
 
-#COMPILATION FLAGS
+# COMPILATION FLAGS
 target_compile_options(
         hash_array_mapped_trie PRIVATE
         -Wall -Wextra -pedantic -Werror
 )
 
-# COMPILATION FLAGS
-#target_compile_options(
-#        test_list PRIVATE
-#        -Wall -Wextra -pedantic -Werror
-#)
