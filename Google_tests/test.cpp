@@ -6,9 +6,8 @@
 #undef protected
 #undef private
 
-
 #include "../include/utils.h"
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
 
 TEST(BITMAP, HAPPY_FLOW__IS_SET_TRUE_AT_THE_BEGINNING_OF_BITMAP) {
     bitmap bmp = {.data = 0b1110010011};
@@ -60,7 +59,7 @@ TEST(CNode, HAPPY_FLOW_GET_NODE_NOT_FOUND) {
 
 TEST(CNode, HAPPY_FLOW_GET_NODE) {
     auto *first_node = new SNode();
-    auto* second_node = new SNode();
+    auto *second_node = new SNode();
 
     CNode node;
     node.bmp = {.data = 0b10001};
@@ -82,8 +81,7 @@ TEST(CNode, HAPPY_FLOW_GET_ARRAY_INDEX_BY_BMP) {
 }
 
 
-
-TEST(UTILS, HAPPY_FLOW_GET_PARTH_OF_HASH_BY_LEVEL) {
+TEST(UTILS, HAPPY_FLOW_GET_PATH_OF_HASH_BY_LEVEL) {
     uint64_t hash = 0b000000000010101110101100101010001;
     ASSERT_EQ(get_path_by_level(hash, 0), 0b10001);
     ASSERT_EQ(get_path_by_level(hash, 1), 0b01010);

@@ -1,7 +1,6 @@
 #include <cstdint>
 #include <string>
 #include <vector>
-#include <math.h>
 
 using namespace std;
 
@@ -10,9 +9,7 @@ using namespace std;
 
 struct bitmap {
     uint32_t data;
-
     bool is_set(uint8_t) const;
-
     void set(uint8_t);
 };
 
@@ -39,20 +36,26 @@ public:
 class CNode : public Node {
 public:
     friend class TestCNode;
+
     CNode() : Node() {
         type = C_NODE;
         bmp = {0};
     }
+
     CNode(SNode *node) : CNode() {
         addNode(node);
     }
 
     void addNode(SNode *);
+
     void replace_child_s_node_to_c_node(int);
+
     Node *getNode(uint8_t);
+
 private:
     bitmap bmp;
     vector<Node *> array;
+
     uint8_t get_array_index_by_bmp(uint8_t) const;
 };
 
