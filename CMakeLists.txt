@@ -3,7 +3,7 @@ project(hash_array_mapped_trie)
 
 set(CMAKE_CXX_STANDARD 14)
 
-add_subdirectory(Google_tests/lib/googletest googletests)
+add_subdirectory(google_tests/lib/googletest googletests)
 
 # MAIN TARGET
 add_executable(
