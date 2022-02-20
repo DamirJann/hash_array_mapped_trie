@@ -11,4 +11,4 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Test project with googletest.
-        uses: actions/checkout@not_concurrent_hamt
+        uses: damirjann/hash_array_mapped_trie@not_concurrent_hamt
