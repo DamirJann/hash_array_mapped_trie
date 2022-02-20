@@ -12,16 +12,16 @@ add_subdirectory(google_tests/lib/googletest googletests)
 #)
 
 # TEST TARGET
-add_executable(
-        test_list
-        test/test.cpp src/utils.cpp src/trie.cpp
-)
-
-
-target_link_libraries(
-        test_list PRIVATE
-        gtest gtest_main
-)
+#add_executable(
+#        test_list
+#        test/test.cpp src/utils.cpp src/trie.cpp
+#)
+#
+#
+#target_link_libraries(
+#        test_list PRIVATE
+#        gtest gtest_main
+#)
 
 # COMPILATION FLAGS
 #target_compile_options(
