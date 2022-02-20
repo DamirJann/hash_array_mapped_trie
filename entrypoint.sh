@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 cd "$GITHUB_WORKSPACE" || exit 1
 
-pwd
 ln -sfn ${GTEST_DIR} ./test_list
 mkdir build
 cd build
