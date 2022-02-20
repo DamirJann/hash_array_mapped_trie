@@ -10,6 +10,5 @@ jobs:
     name: Test Project
     runs-on: ubuntu-latest
     steps:
-      - "$GITHUB_WORKSPACE"
       - name: Test project with googletest.
         uses: damirjann/hash_array_mapped_trie@not_concurrent_hamt
