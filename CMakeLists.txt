@@ -6,10 +6,10 @@ set(CMAKE_CXX_STANDARD 14)
 add_subdirectory(google_tests/lib/googletest googletests)
 
 # MAIN TARGET
-add_executable(
-        hash_array_mapped_trie
-        src/trie.cpp src/utils.cpp main.cpp
-)
+#add_executable(
+#        hash_array_mapped_trie
+#        src/trie.cpp src/utils.cpp main.cpp
+#)
 
 # TEST TARGET
 add_executable(
@@ -24,8 +24,8 @@ target_link_libraries(
 )
 
 # COMPILATION FLAGS
-target_compile_options(
-        hash_array_mapped_trie PRIVATE
-        -Wall -Wextra -pedantic -Werror
-)
+#target_compile_options(
+#        hash_array_mapped_trie PRIVATE
+#        -Wall -Wextra -pedantic -Werror
+#)
 
