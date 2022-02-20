@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 echo "$GITHUB_WORKSPACE"
-#cd "$GITHUB_WORKSPACE" || exit 1
+cd "$GITHUB_WORKSPACE" || exit 1
 ls -l
 cd hamt
 ls -l
