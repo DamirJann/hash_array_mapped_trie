@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-cd "$GITHUB_WORKSPACE" || exit 1
+
 ls -l
 cd hamt
 ls -l
