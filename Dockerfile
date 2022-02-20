@@ -13,6 +13,7 @@ RUN apt-add-repository 'deb https://apt.kitware.com/ubuntu/ bionic main'
 RUN apt-get -y install build-essential cmake qtbase5-dev
 
 COPY entrypoint.sh /entrypoint.sh
+RUN ls -l
 COPY ./ /hamt
 RUN chmod +x entrypoint.sh
 
