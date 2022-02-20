@@ -27,7 +27,7 @@ RUN mkdir -p /googletest/build && \
     make install && \
     cd /
 
-RUN export GTEST_DIR="google_test/lib/googletest/googletest/" GTEST_LIB_DIR="google_test/lib/googletest/build/lib/"
+RUN export GTEST_DIR="/googletest/googletest/" GTEST_LIB_DIR="/googletest/build/lib/"
 
 COPY entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
