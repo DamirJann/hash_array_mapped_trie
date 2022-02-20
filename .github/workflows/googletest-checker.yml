@@ -10,4 +10,6 @@ jobs:
     name: Test Project
     runs-on: ubuntu-latest
     steps:
-      - name: Test project with googletest
+      - uses: actions/checkout@v2
+      - name: Test project with googletest.
+        uses: DamirJann/hash_array_mapped_trie@master
