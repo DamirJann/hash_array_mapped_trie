@@ -16,7 +16,7 @@ COPY entrypoint.sh /entrypoint.sh
 RUN ls -l
 RUN find ./ trie.h
 RUN echo "$GITHUB_WORKSPACE"
-COPY "$GITHUB_WORKSPACE" /hamt
+COPY ./ /hamt
 RUN chmod +x entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
