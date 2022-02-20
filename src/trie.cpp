@@ -1,7 +1,6 @@
 #include "../include/trie.h"
 #include "../include/utils.h"
 #include <bitset>
-#include <bit>
 
 using namespace std;
 
@@ -31,9 +30,10 @@ SNode *create_s_node(string k, int v) {
 
 
 uint8_t CNode::get_array_index_by_bmp(uint8_t pos) const {
-    return __popcount(
-            ((1 << pos) - 1) & bmp.data
-    );
+//    return __popcount(
+//            ((1 << pos) - 1) & bmp.data
+//    );
+    return 0 + pos;
 }
 
 void CNode::addNode(SNode *node) {
