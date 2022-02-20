@@ -14,7 +14,6 @@ RUN apt-get -y install build-essential cmake qtbase5-dev
 
 COPY entrypoint.sh /entrypoint.sh
 RUN ls -l
-RUN find ./ trie.h
 RUN echo "$GITHUB_WORKSPACE"
 COPY ./ /hamt
 RUN chmod +x entrypoint.sh
