@@ -31,12 +31,9 @@ uint8_t SNode::getHashByLevel(uint8_t level) {
     return (hash >> (level * HASH_PIECE_MAX_LEN)) % BRANCH_FACTOR;
 }
 
-
-
 CNode *getCopy(CNode *node) {
     return new CNode(*node);
 }
-
 
 bool INode::swapToCopyWithInsertedChild(Node *child, uint8_t path) {
     CNode *copy = getCopy(this->main);

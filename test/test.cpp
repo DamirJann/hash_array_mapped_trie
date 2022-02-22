@@ -158,8 +158,8 @@ TEST(TRIE, HAPPY_FLOW__INSERT_TWO_KEYS_WITH_DIFFERENT_PREFIXIES) {
     trie.insert(trie.root, second, 0);
 
     // assert
-    SNode *k1 = static_cast<SNode *>(trie.root->main->getSubNode(0b00000));
-    SNode *k2 = static_cast<SNode *>(trie.root->main->getSubNode(0b11111));
+    SNode *k1 = static_cast<SNode *>(trie.root->main->getSubNode(0b11111));
+    SNode *k2 = static_cast<SNode *>(trie.root->main->getSubNode(0b00000));
 
     ASSERT_EQ(k1->value, 1);
     ASSERT_EQ(k2->value, 2);
@@ -210,5 +210,37 @@ TEST(TRIE, HAPPY_FLOW__INSERT_TWO_KEYS_WITH_SAME_BIGGER_PREFIX) {
 
     ASSERT_EQ(k1->value, 1);
     ASSERT_EQ(k2->value, 2);
+}
+
+// BEFORE: i1 -> c1
+//  AFTER: i1 -> c1 -> i2 -> c2 -> i3 -> c3 -> k1, k2
+TEST(TRIE, HAPPY_FLOW__INSERT_TO_EMPTY_TRIE) {
+    // arrange
+    Trie trie;
+
+    // act
+    trie.insert("abc", 1);
+
+    // assert
+    ASSERT_NE(trie.root->main->getSubNode(8), nullptr);
+    ASSERT_EQ(trie.root->main->getSubNode(0), nullptr);
+}
+
+// BEFORE:  i1 -> c1 -> k1
+//  AFTER:  i1' -> c1' -> k1'
+TEST(INODE, HAPPY_FLOW__SWAP_TO_COPY_WITH_REPLACED_CHILD_CREATE_NEW_COPY){
+    // arrange
+    CNode*c1 = new CNode();
+    SNode* k1 = new SNode("", 1, 0);
+    c1->insertChild(k1, 0b00000);
+    INode* i1 = new INode(c1);
+
+    // act
+    i1->swapToCopyWithInsertedChild(new SNode("", 1, 1), 0b11111);
+
+    // assert
+    ASSERT_NE(i1->main, c1);
+    ASSERT_NE(&i1->main->bmp, &c1->bmp);
+    ASSERT_NE(&i1->main->array, &c1->array);
 }
 
