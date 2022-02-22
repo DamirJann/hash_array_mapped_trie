@@ -9,18 +9,25 @@ using namespace std;
 
 struct bitmap {
     uint32_t data;
-    bool is_set(uint8_t) const;
+
+    bool isSet(uint8_t pos) const;
+
     void set(uint8_t);
 };
 
 enum NodeType {
     C_NODE,
     S_NODE,
+    I_NODE
 };
 
 class Node {
 public:
     NodeType type;
+protected:
+    Node(NodeType type) {
+        this->type = type;
+    }
 };
 
 class SNode : public Node {
@@ -28,41 +35,55 @@ public:
     string key;
     int value;
 
-    SNode() : Node() {
-        this->type = S_NODE;
+    uint8_t getHashByLevel(uint8_t);
+
+    SNode(string k, int v, uint64_t hash) : Node(S_NODE) {
+        this->key = k;
+        this->value = v;
+        this->hash = hash;
     }
+
+private:
+    uint64_t hash;
 };
 
 class CNode : public Node {
 public:
     friend class TestCNode;
 
-    CNode() : Node() {
-        type = C_NODE;
+    CNode() : Node(C_NODE) {
         bmp = {0};
     }
+    Node *getSubNode(uint8_t);
 
-    CNode(SNode *node) : CNode() {
-        addNode(node);
-    }
-
-    void addNode(SNode *);
-
-    void replace_child_s_node_to_c_node(int);
-
-    Node *getNode(uint8_t);
+    void insertChild(Node *newChild, uint8_t path);
+    void replaceChild(Node *newChild, uint8_t path);
 
 private:
     bitmap bmp;
     vector<Node *> array;
+    uint8_t getArrayIndexByBmp(uint8_t) const;
+};
 
-    uint8_t get_array_index_by_bmp(uint8_t) const;
+class INode : public Node{
+public:
+    INode(CNode* main): Node(I_NODE){
+        this->main = main;
+    }
+
+    bool swapToCopyWithReplacedChild(INode *newChild, uint8_t path);
+    bool swapToCopyWithInsertedChild(Node *, uint8_t);
+    CNode* main;
 };
 
 class Trie {
 private:
-    Node *root;
+    INode *root;
 public:
+    Trie(){
+        root = new INode(new CNode());
+    }
+
     bool lookup(string k);
 
     bool remove(string k);
@@ -74,5 +95,5 @@ private:
 
     bool remove(int hash);
 
-    static bool insert(uint64_t hash, string k, int v, CNode *node, uint8_t level);
+    static bool insert(INode *, SNode *, uint8_t );
 };

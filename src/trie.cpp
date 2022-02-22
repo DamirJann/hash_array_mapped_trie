@@ -5,7 +5,7 @@
 using namespace std;
 
 
-bool bitmap::is_set(uint8_t pos) const {
+bool bitmap::isSet(uint8_t pos) const {
     return (this->data >> pos) % 2;
 }
 
@@ -13,71 +13,99 @@ void bitmap::set(uint8_t pos) {
     this->data = this->data | (1 << pos);
 }
 
-uint64_t get_hash(string k) {
-    uint64_t hash = 0;
-    for (size_t i = 0; i < k.size(); i++) {
-        hash +=  k[i] * i;
-    }
-    return hash % 10;
-}
-
-SNode *create_s_node(string k, int v) {
-    auto *node = new SNode();
+SNode *createSNode(string &k, int v, uint64_t hash) {
+    auto *node = new SNode(k, v, hash);
     node->key = k;
     node->value = v;
     return node;
 }
 
 
-uint8_t CNode::get_array_index_by_bmp(uint8_t pos) const {
+uint8_t CNode::getArrayIndexByBmp(uint8_t pos) const {
     return __builtin_popcount(
             ((1 << pos) - 1) & bmp.data
     );
 }
 
-void CNode::addNode(SNode *node) {
-    vector<Node *> upd_arr;
-    uint8_t i = 0;
-    while (i < BRANCH_FACTOR) {
-        if (!bmp.is_set(i)) {
-            bmp.set(1);
-            upd_arr.push_back(node);
-        } else {
-            int ind = this->get_array_index_by_bmp(i);
-            upd_arr.push_back(array[ind]);
-        }
-        i++;
-    }
+uint8_t SNode::getHashByLevel(uint8_t level) {
+    return (hash >> (level * HASH_PIECE_MAX_LEN)) % BRANCH_FACTOR;
 }
 
-Node *CNode::getNode(uint8_t path) {
-    if (!bmp.is_set(path)) return nullptr;
-    int index = this->get_array_index_by_bmp(path);
+
+
+CNode *getCopy(CNode *node) {
+    return new CNode(*node);
+}
+
+
+bool INode::swapToCopyWithInsertedChild(Node *child, uint8_t path) {
+    CNode *copy = getCopy(this->main);
+    copy->insertChild(child, path);
+    // cas
+    this->main = copy;
+    return true;
+}
+
+
+Node *CNode::getSubNode(uint8_t path) {
+    if (!bmp.isSet(path)) return nullptr;
+    int index = this->getArrayIndexByBmp(path);
     return array[index];
 }
 
-void CNode::replace_child_s_node_to_c_node(int pos) {
-    SNode *child_node = static_cast<SNode *>(getNode(pos));
-    CNode *c_node = new CNode(child_node);
-    int index = get_array_index_by_bmp(pos);
-    array[index] = c_node;
+void CNode::insertChild(Node *newChild, uint8_t path) {
+    this->bmp.set(path);
+    this->array.insert(this->array.begin() + this->getArrayIndexByBmp(path), newChild);
+}
+
+void CNode::replaceChild(Node *newChild, uint8_t path) {
+    this->array[this->getArrayIndexByBmp(path)] = newChild;
+}
+
+
+
+CNode* createParentWithChild(SNode* child, uint8_t path){
+    CNode* parent = new CNode();
+    parent->insertChild(child, path);
+    return parent;
 }
 
 bool Trie::insert(string k, int v) {
     if (root == nullptr) {
-        root = new CNode();
+        root = new INode(new CNode());
     }
-    return insert(get_hash(k), k, v, reinterpret_cast<CNode *>(root), 1);
+
+    SNode *subNode = createSNode(k, v, generateHash(k));
+    return insert(root, subNode, 0);
 }
 
-bool Trie::insert(uint64_t hash, string k, int v, CNode *node, uint8_t level) {
-    int path = get_path_by_level(hash, level);
+bool INode::swapToCopyWithReplacedChild(INode *newChild, uint8_t path) {
+    CNode *copy = getCopy(this->main);
+    copy->replaceChild(newChild, path);
+    // cas
+    this->main = copy;
+    return true;
+}
 
-    if (node->getNode(path) != nullptr) {
-        node->addNode(create_s_node(k, v));
+bool Trie::insert(INode *startNode, SNode *newNode, uint8_t level) {
+    int path = newNode->getHashByLevel(level);
+    Node *subNode = startNode->main->getSubNode(path);
+
+    if (subNode == nullptr) {
+        startNode->swapToCopyWithInsertedChild(newNode, path);
         return true;
     } else {
-        node->replace_child_s_node_to_c_node(path);
-        return insert(hash, k, v, static_cast<CNode *>(node->getNode(path)), level + 1);
+        if (subNode->type == S_NODE) {
+
+            auto * s1 = reinterpret_cast<SNode *>(subNode); // TODO MAKE COPY
+            CNode * c1 = createParentWithChild(s1, s1->getHashByLevel(level + 1));
+            INode * i1 = new INode(c1);
+
+            startNode->swapToCopyWithReplacedChild(i1, s1->getHashByLevel(level));
+        }
+
+        return insert(static_cast<INode*>(startNode->main->getSubNode(path)), newNode, level + 1);
     }
 }
+
+

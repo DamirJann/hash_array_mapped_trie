@@ -1,1 +1,6 @@
-uint8_t get_path_by_level(uint64_t, uint8_t);
+#include <cstddef>
+#include <cstdint>
+#include <string>
+using namespace std;
+
+uint64_t generateHash(string);

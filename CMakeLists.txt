@@ -9,18 +9,18 @@ add_subdirectory(google_tests/lib/googletest googletests)
 # MAIN TARGET
 add_executable(
         hash_array_mapped_trie
-        src/trie.cpp src/utils.cpp main.cpp
+        src/trie.cpp main.cpp src/utils.cpp
 )
 
 # TEST TARGET
 add_executable(
-        test_list
-        test/test.cpp src/utils.cpp src/trie.cpp
+        test
+        test/test.cpp src/trie.cpp src/utils.cpp
 )
 
 
 target_link_libraries(
-        test_list PRIVATE
+        test PRIVATE
         gtest gtest_main
 )
 
