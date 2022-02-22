@@ -86,18 +86,18 @@ TEST(CNode, HAPPY_FLOW_GET__NODE_NOT_FOUND) {
     ASSERT_EQ(node.getSubNode(0b11111), nullptr);
 }
 
-//TEST(CNode, HAPPY_FLOW_GET_NODE) {
-//    // arrange
-//    auto *first_node = new SNode(" ", 0, 0);
-//    auto *second_node = new SNode(" ", 0, 0);
-//    CNode node;
-//    node.bmp = {0b10001};
-//    node.array = {first_node, second_node};
-//
-//    // act & assert
-//    ASSERT_EQ(node.getSubNode(0), first_node);
-//    ASSERT_EQ(node.getSubNode(4), second_node);
-//}
+TEST(CNode, HAPPY_FLOW_GET_NODE) {
+    // arrange
+    auto *first_node = new SNode(" ", 0, 0);
+    auto *second_node = new SNode(" ", 0, 0);
+    CNode node;
+    node.bmp = {0b10001};
+    node.array = {first_node, second_node};
+
+    // act & assert
+    ASSERT_EQ(node.getSubNode(0), first_node);
+    ASSERT_EQ(node.getSubNode(4), second_node);
+}
 
 TEST(CNode, HAPPY_FLOW__GET_ARRAY_INDEX_BY_BMP) {
     // arrange
