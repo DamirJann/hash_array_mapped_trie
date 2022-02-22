@@ -14,13 +14,13 @@ add_executable(
 
 # TEST TARGET
 add_executable(
-        test
+        run_tests
         test/test.cpp src/trie.cpp src/utils.cpp
 )
 
 
 target_link_libraries(
-        test PRIVATE
+        run_tests PRIVATE
         gtest gtest_main
 )
 
