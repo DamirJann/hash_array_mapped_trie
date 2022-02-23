@@ -36,14 +36,13 @@ public:
     string key;
     int value;
 
-    uint8_t getHashByLevel(uint8_t);
-
     SNode(string k, int v, uint64_t hash) : Node(S_NODE) {
         this->key = k;
         this->value = v;
         this->hash = hash;
     }
 
+    uint64_t getHash();
 private:
     uint64_t hash;
 };
@@ -74,8 +73,19 @@ public:
 
     bool swapToCopyWithReplacedChild(INode *newChild, uint8_t path);
     bool swapToCopyWithInsertedChild(Node *, uint8_t);
+    bool tryToContract(uint8_t path);
     CNode* main;
 };
+
+struct lookupResult{
+    int value;
+    bool isFound;
+
+};
+
+const lookupResult NOT_FOUND{0, false};
+
+lookupResult createLookupResult(int value);
 
 class Trie {
 private:
@@ -87,12 +97,12 @@ public:
     }
 
     Node * getRoot();
-    bool lookup(string k);
+    lookupResult lookup(string k);
     bool remove(string k);
     bool insert(string k, int v);
 
 private:
-    bool lookup(int hash);
-    bool remove(int hash);
+    lookupResult lookup(INode*, string k, uint64_t hash,  uint8_t level);
+    bool remove(INode*, string k, uint64_t hash,  uint8_t level);
     static bool insert(INode *, SNode *, uint8_t );
 };

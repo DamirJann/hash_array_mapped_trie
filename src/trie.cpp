@@ -1,6 +1,5 @@
 #include "../include/trie.h"
 #include "../include/utils.h"
-
 using namespace std;
 
 
@@ -24,10 +23,6 @@ uint8_t CNode::getArrayIndexByBmp(uint8_t pos) const {
     return __builtin_popcount(
             ((1 << pos) - 1) & bmp.data
     );
-}
-
-uint8_t SNode::getHashByLevel(uint8_t level) {
-    return (hash >> (level * HASH_PIECE_MAX_LEN)) % BRANCH_FACTOR;
 }
 
 CNode *getCopy(CNode *node) {
@@ -59,14 +54,13 @@ void CNode::replaceChild(Node *newChild, uint8_t path) {
 }
 
 
-
-CNode* createParentWithChild(SNode* child, uint8_t path){
-    CNode* parent = new CNode();
+CNode *createParentWithChild(SNode *child, uint8_t path) {
+    CNode *parent = new CNode();
     parent->insertChild(child, path);
     return parent;
 }
 
-Node * Trie::getRoot(){
+Node *Trie::getRoot() {
     return this->root;
 }
 
@@ -87,8 +81,13 @@ bool INode::swapToCopyWithReplacedChild(INode *newChild, uint8_t path) {
     return true;
 }
 
+bool INode::tryToContract(uint8_t path) {
+    // TOOD implement
+    return true;
+}
+
 bool Trie::insert(INode *startNode, SNode *newNode, uint8_t level) {
-    int path = newNode->getHashByLevel(level);
+    int path = extractHashPartByLevel(newNode->getHash(), level);
     Node *subNode = startNode->main->getSubNode(path);
 
     if (subNode == nullptr) {
@@ -96,15 +95,80 @@ bool Trie::insert(INode *startNode, SNode *newNode, uint8_t level) {
         return true;
     } else {
         if (subNode->type == S_NODE) {
-            auto * s1 = reinterpret_cast<SNode *>(subNode); // TODO MAKE COPY
-            CNode * c1 = createParentWithChild(s1, s1->getHashByLevel(level + 1));
-            INode * i1 = new INode(c1);
+            auto *s1 = reinterpret_cast<SNode *>(subNode); // TODO MAKE COPY
+            CNode *c1 = createParentWithChild(s1, extractHashPartByLevel(s1->getHash(), level + 1));
+            INode *i1 = new INode(c1);
 
-            startNode->swapToCopyWithReplacedChild(i1, s1->getHashByLevel(level));
+            startNode->swapToCopyWithReplacedChild(i1, extractHashPartByLevel(s1->getHash(), level));
         }
 
-        return insert(static_cast<INode*>(startNode->main->getSubNode(path)), newNode, level + 1);
+        return insert(static_cast<INode *>(startNode->main->getSubNode(path)), newNode, level + 1);
+    }
+}
+
+lookupResult Trie::lookup(string k) {
+    if (root == nullptr) {
+        root = new INode(new CNode());
+    }
+    return lookup(root, k, generateHash(k), 0);
+}
+
+
+lookupResult Trie::lookup(INode *startNode, string k, uint64_t hash, uint8_t level) {
+    Node *nextNode = startNode->main->getSubNode(extractHashPartByLevel(hash, level));
+
+    if (nextNode == nullptr) return NOT_FOUND;
+
+    switch (nextNode->type) {
+        case S_NODE:{
+            return  static_cast<SNode *>(nextNode)->key == k ? createLookupResult(static_cast<SNode *>(nextNode)->value) :
+                                                               NOT_FOUND;
+        }
+        case I_NODE:{
+            return lookup(static_cast<INode*>(nextNode), k, hash, level+1);
+        }
+        default:{
+            static_assert(true, "Trie is build wrong");
+            return NOT_FOUND;
+        }
+    }
+}
+
+bool Trie::remove(string k) {
+    if (root == nullptr) {
+        root = new INode(new CNode());
+    }
+    return remove(root, k, generateHash(k), 0);
+}
+
+bool Trie::remove(INode* startNode, string k, uint64_t hash,  uint8_t level) {
+    Node *nextNode = startNode->main->getSubNode(extractHashPartByLevel(hash, level));
+
+    if (nextNode == nullptr) return false;
+
+    switch (nextNode->type) {
+        case S_NODE:{
+            if (static_cast<SNode *>(nextNode)->key == k){
+                startNode->swapToCopyWithReplacedChild(nullptr, extractHashPartByLevel(hash, level));
+                startNode->tryToContract(extractHashPartByLevel(hash, level));
+                return true;
+            }
+        }
+        case I_NODE:{
+            return remove(static_cast<INode*>(nextNode), k, hash, level+1);
+        }
+        default:{
+            static_assert(true, "Trie is build wrong");
+            return false;
+        }
     }
 }
 
 
+lookupResult createLookupResult(int value){
+    return {value, true};
+}
+
+uint64_t SNode::getHash() {
+    return hash;
+}

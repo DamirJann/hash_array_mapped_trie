@@ -118,9 +118,9 @@ TEST(UTILS, HAPPY__FLOW_GET_PATH_OF_HASH_BY_LEVEL) {
     SNode node("abcdefg1", 0, generateHash("abcdefg1"));
 
     // act & assert
-    ASSERT_EQ(node.getHashByLevel(0), 0b10111);
-    ASSERT_EQ(node.getHashByLevel(1), 0b01110);
-    ASSERT_EQ(node.getHashByLevel(3), 0b00000);
+    ASSERT_EQ(extractHashPartByLevel(node.getHash(), 0), 0b10111);
+    ASSERT_EQ(extractHashPartByLevel(node.getHash(), 1), 0b01110);
+    ASSERT_EQ(extractHashPartByLevel(node.getHash(), 2), 0b00000);
 }
 
 
@@ -226,14 +226,128 @@ TEST(TRIE, HAPPY_FLOW__INSERT_TO_EMPTY_TRIE) {
     ASSERT_EQ(trie.root->main->getSubNode(0), nullptr);
 }
 
+TEST(TRIE, HAPPY_FLOW__LOOKUP) {
+    // arrange
+    Trie trie;
+
+    trie.insert("k1", 1);
+    trie.insert("k2", 2);
+    trie.insert("k3", 3);
+    trie.insert("k4", 4);
+    trie.insert("k5", 5);
+    trie.insert("k6", 6);
+    trie.insert("k7", 7);
+    trie.insert("k8", 8);
+    trie.insert("k9", 9);
+    trie.insert("k10", 10);
+    trie.insert("k11", 11);
+    trie.insert("k12", 12);
+    trie.insert("k13", 13);
+    trie.insert("k14", 14);
+    trie.insert("k15", 15);
+    trie.insert("k16", 16);
+    trie.insert("k17", 17);
+    trie.insert("k18", 18);
+    trie.insert("k19", 19);
+    trie.insert("k20", 20);
+    trie.insert("k21", 21);
+    trie.insert("k22", 22);
+    trie.insert("k23", 23);
+    trie.insert("k24", 24);
+    trie.insert("k25", 25);
+
+    // act & assert
+    ASSERT_EQ(trie.lookup("k1").value, 1);
+    ASSERT_EQ(trie.lookup("k2").value, 2);
+    ASSERT_EQ(trie.lookup("k3").value, 3);
+    ASSERT_EQ(trie.lookup("k4").value, 4);
+    ASSERT_EQ(trie.lookup("k5").value, 5);
+    ASSERT_EQ(trie.lookup("k6").value, 6);
+    ASSERT_EQ(trie.lookup("k7").value, 7);
+    ASSERT_EQ(trie.lookup("k8").value, 8);
+    ASSERT_EQ(trie.lookup("k9").value, 9);
+    ASSERT_EQ(trie.lookup("k10").value, 10);
+    ASSERT_EQ(trie.lookup("k11").value, 11);
+    ASSERT_EQ(trie.lookup("k12").value, 12);
+    ASSERT_EQ(trie.lookup("k13").value, 13);
+    ASSERT_EQ(trie.lookup("k14").value, 14);
+    ASSERT_EQ(trie.lookup("k15").value, 15);
+    ASSERT_EQ(trie.lookup("k16").value, 16);
+    ASSERT_EQ(trie.lookup("k17").value, 17);
+    ASSERT_EQ(trie.lookup("k18").value, 18);
+    ASSERT_EQ(trie.lookup("k19").value, 19);
+    ASSERT_EQ(trie.lookup("k20").value, 20);
+    ASSERT_EQ(trie.lookup("k21").value, 21);
+    ASSERT_EQ(trie.lookup("k22").value, 22);
+    ASSERT_EQ(trie.lookup("k23").value, 23);
+    ASSERT_EQ(trie.lookup("k24").value, 24);
+    ASSERT_EQ(trie.lookup("k25").value, 25);
+
+    ASSERT_EQ(trie.lookup("k222").isFound, false);
+    ASSERT_EQ(trie.lookup("k223").isFound, false);
+    ASSERT_EQ(trie.lookup("k224").isFound, false);
+    ASSERT_EQ(trie.lookup("k225").isFound, false);
+    ASSERT_EQ(trie.lookup("k226").isFound, false);
+    ASSERT_EQ(trie.lookup("k227").isFound, false);
+    ASSERT_EQ(trie.lookup("k228").isFound, false);
+    ASSERT_EQ(trie.lookup("k229").isFound, false);
+    ASSERT_EQ(trie.lookup("k2210").isFound, false);
+    ASSERT_EQ(trie.lookup("k2211").isFound, false);
+    ASSERT_EQ(trie.lookup("k2212").isFound, false);
+    ASSERT_EQ(trie.lookup("k2213").isFound, false);
+    ASSERT_EQ(trie.lookup("k2214").isFound, false);
+    ASSERT_EQ(trie.lookup("k2215").isFound, false);
+    ASSERT_EQ(trie.lookup("k2216").isFound, false);
+    ASSERT_EQ(trie.lookup("k2217").isFound, false);
+    ASSERT_EQ(trie.lookup("k2218").isFound, false);
+    ASSERT_EQ(trie.lookup("k2229").isFound, false);
+    ASSERT_EQ(trie.lookup("k2220").isFound, false);
+    ASSERT_EQ(trie.lookup("k2222").isFound, false);
+    ASSERT_EQ(trie.lookup("k2223").isFound, false);
+    ASSERT_EQ(trie.lookup("k2224").isFound, false);
+    ASSERT_EQ(trie.lookup("k2225").isFound, false);
+    ASSERT_EQ(trie.lookup("k2226").isFound, false);
+    ASSERT_EQ(trie.lookup("k227").isFound, false);
+    ASSERT_EQ(trie.lookup("k2228").isFound, false);
+    ASSERT_EQ(trie.lookup("k22d29").isFound, false);
+
+}
+
+TEST(TRIE, HAPPY_FLOW__REMOVE_ALL_KEYS) {
+    // arrange
+    Trie trie;
+    trie.insert("k1", 1);
+    trie.insert("k2", 2);
+    trie.insert("k3", 3);
+    trie.insert("k30", 3);
+    trie.insert("k4", 4);
+
+    // act
+    ASSERT_EQ(trie.remove("k1"), true);
+    ASSERT_EQ(trie.remove("k2"), true);
+    ASSERT_EQ(trie.remove("k30"), true);
+    ASSERT_EQ(trie.remove("k3"), true);
+    ASSERT_EQ(trie.remove("k4"), true);
+    ASSERT_EQ(trie.remove("k5"), false);
+    ASSERT_EQ(trie.remove("k7"), false);
+
+    // assert
+    ASSERT_EQ(trie.lookup("k1").isFound, false);
+    ASSERT_EQ(trie.lookup("k2").isFound, false);
+    ASSERT_EQ(trie.lookup("k3").isFound, false);
+    ASSERT_EQ(trie.lookup("k30").isFound, false);
+    ASSERT_EQ(trie.lookup("k4").isFound, false);
+
+}
+
 // BEFORE:  i1 -> c1 -> k1
 //  AFTER:  i1' -> c1' -> k1'
-TEST(INODE, HAPPY_FLOW__SWAP_TO_COPY_WITH_REPLACED_CHILD_CREATE_NEW_COPY){
+TEST(INODE, HAPPY_FLOW__SWAP_TO_COPY_WITH_REPLACED_CHILD_CREATE_NEW_COPY) {
     // arrange
-    CNode*c1 = new CNode();
-    SNode* k1 = new SNode("", 1, 0);
+    CNode *c1 = new CNode();
+    SNode *k1 = new SNode("", 1, 0);
     c1->insertChild(k1, 0b00000);
-    INode* i1 = new INode(c1);
+    INode *i1 = new INode(c1);
 
     // act
     i1->swapToCopyWithInsertedChild(new SNode("", 1, 1), 0b11111);
@@ -243,4 +357,5 @@ TEST(INODE, HAPPY_FLOW__SWAP_TO_COPY_WITH_REPLACED_CHILD_CREATE_NEW_COPY){
     ASSERT_NE(&i1->main->bmp, &c1->bmp);
     ASSERT_NE(&i1->main->array, &c1->array);
 }
+
 
