@@ -1,6 +1,5 @@
 #include "../include/trie.h"
 #include "../include/utils.h"
-#include <bitset>
 
 using namespace std;
 
@@ -67,6 +66,10 @@ CNode* createParentWithChild(SNode* child, uint8_t path){
     return parent;
 }
 
+Node * Trie::getRoot(){
+    return this->root;
+}
+
 bool Trie::insert(string k, int v) {
     if (root == nullptr) {
         root = new INode(new CNode());
@@ -93,7 +96,6 @@ bool Trie::insert(INode *startNode, SNode *newNode, uint8_t level) {
         return true;
     } else {
         if (subNode->type == S_NODE) {
-
             auto * s1 = reinterpret_cast<SNode *>(subNode); // TODO MAKE COPY
             CNode * c1 = createParentWithChild(s1, s1->getHashByLevel(level + 1));
             INode * i1 = new INode(c1);

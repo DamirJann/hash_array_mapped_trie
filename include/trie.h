@@ -1,7 +1,8 @@
 #include <cstdint>
 #include <string>
 #include <vector>
-
+#include <bitset>
+#pragma once
 using namespace std;
 
 #define HASH_PIECE_MAX_LEN 5
@@ -80,20 +81,18 @@ class Trie {
 private:
     INode *root;
 public:
+
     Trie(){
         root = new INode(new CNode());
     }
 
+    Node * getRoot();
     bool lookup(string k);
-
     bool remove(string k);
-
     bool insert(string k, int v);
 
 private:
     bool lookup(int hash);
-
     bool remove(int hash);
-
     static bool insert(INode *, SNode *, uint8_t );
 };
