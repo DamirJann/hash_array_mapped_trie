@@ -9,8 +9,8 @@ add_executable(
 )
 
 # COMPILATION FLAGS
-target_compile_options(
-        hamt PRIVATE
-        -Wall -Wextra -pedantic -Werror
-)
+#target_compile_options(
+#        hamt PRIVATE
+#        -Wall -Wextra -pedantic -Werror
+#)
 

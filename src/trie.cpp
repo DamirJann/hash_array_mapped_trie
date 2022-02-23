@@ -82,8 +82,9 @@ bool INode::swapToCopyWithReplacedChild(INode *newChild, uint8_t path) {
 }
 
 bool INode::tryToContract(uint8_t path) {
-    // TOOD implement
-    return true;
+
+    // TODO not implemented
+    return path;
 }
 
 bool Trie::insert(INode *startNode, SNode *newNode, uint8_t level) {

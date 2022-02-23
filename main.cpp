@@ -47,6 +47,7 @@ int main(){
     trie.insert("k376", 0);
 
     trie.remove("k1");
+    trie.remove("k8");
 
     ofstream f = std::ofstream("graph.txt");
     visualize(f, &trie);
