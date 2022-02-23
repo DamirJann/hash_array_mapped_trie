@@ -3,7 +3,7 @@
 cd "$GITHUB_WORKSPACE" || exit 1
 cd hamt
 
-cmake -DCMAKE_C_COMPILER=clang-10 -DCMAKE_CXX_COMPILER=clang++-10
+cmake  -DCMAKE_C_COMPILER=clang-10 -DCMAKE_CXX_COMPILER=clang++-10 --target=run_tests --build .
 make
 
 ./run_tests
