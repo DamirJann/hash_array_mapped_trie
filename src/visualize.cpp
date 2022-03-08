@@ -1,4 +1,11 @@
+#define protected public
+#define private   public
+
 #include "../include/visualize.h"
+
+#undef protected
+#undef private
+
 #include <boost/graph/graphviz.hpp>
 
 int counter = 0;
@@ -21,8 +28,13 @@ struct height {
             }
             case C_NODE:
                 return "C" + to_string(id);
-            case S_NODE:
-                return static_cast<SNode *>(v)->key + ", " + to_string(static_cast<SNode *>(v)->value) ;
+            case S_NODE: {
+                string label = "";
+                for (auto &p: static_cast<SNode *>(v)->pair) {
+                    label += "(" + p.key + ", " + to_string(p.value) + ")\n";
+                }
+                return label;
+            }
             default:
                 return "Unknown";
         }
@@ -74,9 +86,9 @@ void visualize(ofstream &f, Trie *trie) {
         names[i] = heights[i].getLabel();
     }
 
-    typedef adjacency_list <vecS, vecS, directedS,
-    property<vertex_color_t, default_color_type>,
-    property<edge_weight_t, int>
+    typedef adjacency_list<vecS, vecS, directedS,
+            property<vertex_color_t, default_color_type>,
+            property<edge_weight_t, int>
     > Graph;
     Graph g(used_by, used_by, weights, heights.size());
 

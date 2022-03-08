@@ -2,6 +2,8 @@
 #include <string>
 #include <vector>
 #include <bitset>
+#include <set>
+
 #pragma once
 using namespace std;
 
@@ -31,20 +33,36 @@ protected:
     }
 };
 
-class SNode : public Node {
-public:
+struct Pair {
     string key;
     int value;
 
+    bool operator<(const Pair& p) const {
+        return this->key < p.key;
+    }
+};
+
+
+class SNode : public Node {
+public:
+
     SNode(string k, int v, uint64_t hash) : Node(S_NODE) {
-        this->key = k;
-        this->value = v;
+        this->pair.insert({k, v});
         this->hash = hash;
     }
 
     uint64_t getHash();
+
+    bool contains(string);
+
+    int getValue(string);
+
+    void merge(SNode *);
+
 private:
     uint64_t hash;
+    set<Pair> pair;
+
 };
 
 class CNode : public Node {
@@ -54,55 +72,66 @@ public:
     CNode() : Node(C_NODE) {
         bmp = {0};
     }
+
     Node *getSubNode(uint8_t);
 
     void insertChild(Node *newChild, uint8_t path);
+
     void replaceChild(Node *newChild, uint8_t path);
 
 private:
     bitmap bmp;
     vector<Node *> array;
+
     uint8_t getArrayIndexByBmp(uint8_t) const;
 };
 
-class INode : public Node{
+class INode : public Node {
 public:
-    INode(CNode* main): Node(I_NODE){
+    INode(CNode *main) : Node(I_NODE) {
         this->main = main;
     }
 
-    bool swapToCopyWithReplacedChild(INode *newChild, uint8_t path);
+    bool swapToCopyWithReplacedChild(Node *newChild, uint8_t path);
+
     bool swapToCopyWithInsertedChild(Node *, uint8_t);
+
     bool tryToContract(uint8_t path);
-    CNode* main;
+
+    CNode *main;
 };
 
-struct lookupResult{
+struct LookupResult {
     int value;
     bool isFound;
 
 };
 
-const lookupResult NOT_FOUND{0, false};
+const LookupResult NOT_FOUND{0, false};
 
-lookupResult createLookupResult(int value);
+LookupResult createLookupResult(int value);
 
 class Trie {
 private:
     INode *root;
 public:
 
-    Trie(){
+    Trie() {
         root = new INode(new CNode());
     }
 
-    Node * getRoot();
-    lookupResult lookup(string k);
+    Node *getRoot();
+
+    LookupResult lookup(string k);
+
     bool remove(string k);
+
     bool insert(string k, int v);
 
 private:
-    lookupResult lookup(INode*, string k, uint64_t hash,  uint8_t level);
-    bool remove(INode*, string k, uint64_t hash,  uint8_t level);
-    static bool insert(INode *, SNode *, uint8_t );
+    LookupResult lookup(INode *, string k, uint64_t hash, uint8_t level);
+
+    bool remove(INode *, string k, uint64_t hash, uint8_t level);
+
+    static bool insert(INode *, SNode *, uint8_t);
 };

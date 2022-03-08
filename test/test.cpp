@@ -141,8 +141,9 @@ TEST(TRIE, HAPPY_FLOW__INSERT_TWO_KEYS_WITH_SAME_PREFIX) {
     SNode *k1 = static_cast<SNode *>(i2->main->getSubNode(0b00010));
     SNode *k2 = static_cast<SNode *>(i2->main->getSubNode(0b00011));
 
-    ASSERT_EQ(k1->value, 1);
-    ASSERT_EQ(k2->value, 2);
+
+    ASSERT_EQ(k1->getValue(""), 1);
+    ASSERT_EQ(k2->getValue(""), 2);
 }
 
 // BEFORE: i1 -> c1
@@ -161,8 +162,8 @@ TEST(TRIE, HAPPY_FLOW__INSERT_TWO_KEYS_WITH_DIFFERENT_PREFIXIES) {
     SNode *k1 = static_cast<SNode *>(trie.root->main->getSubNode(0b11111));
     SNode *k2 = static_cast<SNode *>(trie.root->main->getSubNode(0b00000));
 
-    ASSERT_EQ(k1->value, 1);
-    ASSERT_EQ(k2->value, 2);
+    ASSERT_EQ(k1->getValue(""), 1);
+    ASSERT_EQ(k2->getValue(""), 2);
 }
 
 // BEFORE: i1 -> c1
@@ -185,9 +186,9 @@ TEST(TRIE, HAPPY_FLOW__INSERT_THREE_KEYS) {
     SNode *k2 = static_cast<SNode *>(i2->main->getSubNode(0b00000));
     SNode *k3 = static_cast<SNode *>(i2->main->getSubNode(0b11111));
 
-    ASSERT_EQ(k1->value, 1);
-    ASSERT_EQ(k2->value, 2);
-    ASSERT_EQ(k3->value, 3);
+    ASSERT_EQ(k1->getValue(""), 1);
+    ASSERT_EQ(k2->getValue(""), 2);
+    ASSERT_EQ(k3->getValue(""), 3);
 }
 
 // BEFORE: i1 -> c1
@@ -208,8 +209,8 @@ TEST(TRIE, HAPPY_FLOW__INSERT_TWO_KEYS_WITH_SAME_BIGGER_PREFIX) {
     SNode *k1 = static_cast<SNode *>(i3->main->getSubNode(0b00000));
     SNode *k2 = static_cast<SNode *>(i3->main->getSubNode(0b10101));
 
-    ASSERT_EQ(k1->value, 1);
-    ASSERT_EQ(k2->value, 2);
+    ASSERT_EQ(k1->getValue(""), 1);
+    ASSERT_EQ(k2->getValue(""), 2);
 }
 
 // BEFORE: i1 -> c1
@@ -357,5 +358,7 @@ TEST(INODE, HAPPY_FLOW__SWAP_TO_COPY_WITH_REPLACED_CHILD_CREATE_NEW_COPY) {
     ASSERT_NE(&i1->main->bmp, &c1->bmp);
     ASSERT_NE(&i1->main->array, &c1->array);
 }
+
+
 
 
