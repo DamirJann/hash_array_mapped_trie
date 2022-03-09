@@ -7,15 +7,15 @@
 #pragma once
 using namespace std;
 
-#define HASH_PIECE_MAX_LEN 5
+#define HASH_PIECE_LEN 5
 #define BRANCH_FACTOR 32
 
 struct bitmap {
     uint32_t data;
 
     bool isSet(uint8_t pos) const;
-
     void set(uint8_t);
+    void unset(uint8_t);
 };
 
 enum NodeType {
@@ -54,6 +54,7 @@ public:
     uint64_t getHash();
 
     bool contains(string);
+    bool contains(SNode* node);
 
     int getValue(string);
 
@@ -73,11 +74,21 @@ public:
         bmp = {0};
     }
 
+    CNode(CNode* node): CNode(){
+        this->bmp.data = node->bmp.data;
+        this->array = node->array;
+    }
+
     Node *getSubNode(uint8_t);
+
+    bool containsTheOnlyKey();
+
+    Node* getFirst() ;
 
     void insertChild(Node *newChild, uint8_t path);
 
     void replaceChild(Node *newChild, uint8_t path);
+    void deleteChild(uint8_t path);
 
 private:
     bitmap bmp;
@@ -95,8 +106,9 @@ public:
     bool swapToCopyWithReplacedChild(Node *newChild, uint8_t path);
 
     bool swapToCopyWithInsertedChild(Node *, uint8_t);
+    bool swapToCopyWithDeletedChild(uint8_t path);
 
-    bool tryToContract(uint8_t path);
+    bool tryToContract(INode* currentNode, uint8_t path);
 
     CNode *main;
 };
@@ -131,7 +143,7 @@ public:
 private:
     LookupResult lookup(INode *, string k, uint64_t hash, uint8_t level);
 
-    bool remove(INode *, string k, uint64_t hash, uint8_t level);
+    bool remove(INode *, string k, uint64_t hash, uint8_t level, INode* iParent);
 
     static bool insert(INode *, SNode *, uint8_t);
 };
