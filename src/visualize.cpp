@@ -30,8 +30,9 @@ struct height {
                 return "C" + to_string(id);
             case S_NODE: {
                 string label = "";
+                label += "hs: " + to_string(static_cast<SNode *>(this->v)->getHash()) + "\n\n";
                 for (auto &p: static_cast<SNode *>(v)->pair) {
-                    label += "(" + p.key + ", " + to_string(p.value) + ")\n";
+                    label += "(" + p.key + ", " + to_string(p.value) + ") \n";
                 }
                 return label;
             }

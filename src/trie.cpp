@@ -12,6 +12,10 @@ void bitmap::set(uint8_t pos) {
     this->data = this->data | (1 << pos);
 }
 
+void bitmap::unset(uint8_t pos) {
+    this->data = this->data & (~(1 << pos)) ;
+}
+
 SNode *createSNode(string &k, int v, uint64_t hash) {
     return new SNode(k, v, hash);
 }
@@ -26,12 +30,21 @@ CNode *getCopy(CNode *node) {
     return new CNode(*node);
 }
 
+
 bool INode::swapToCopyWithInsertedChild(Node *child, uint8_t path) {
     CNode *copy = getCopy(this->main);
     copy->insertChild(child, path);
     // cas
     this->main = copy;
     return true;
+}
+
+bool CNode::containsTheOnlyKey() {
+    return this->array.size() == 1;
+}
+
+Node *CNode::getFirst() {
+    return this->array.front();
 }
 
 
@@ -48,6 +61,11 @@ void CNode::insertChild(Node *newChild, uint8_t path) {
 
 void CNode::replaceChild(Node *newChild, uint8_t path) {
     this->array[this->getArrayIndexByBmp(path)] = newChild;
+}
+
+void CNode::deleteChild(uint8_t path) {
+    array.erase(array.begin() + this->getArrayIndexByBmp(path));
+    bmp.unset(path);
 }
 
 
@@ -78,10 +96,21 @@ bool INode::swapToCopyWithReplacedChild(Node *newChild, uint8_t path) {
     return true;
 }
 
-bool INode::tryToContract(uint8_t path) {
+bool INode::swapToCopyWithDeletedChild(uint8_t path) {
+    CNode *copy = getCopy(this->main);
+    copy->deleteChild( path);
+    // cas
+    this->main = copy;
+    return true;
+}
 
-    // TODO not implemented
-    return path;
+bool tryToContract(INode *currentNode, INode *reducedNode, uint8_t path) {
+    if (currentNode == nullptr || !reducedNode->main->containsTheOnlyKey()) return false;
+
+    Node *replaced = reducedNode->main->getFirst();
+    currentNode->swapToCopyWithReplacedChild(replaced, path);
+
+    return true;
 }
 
 bool Trie::insert(INode *startNode, SNode *newNode, uint8_t level) {
@@ -92,7 +121,7 @@ bool Trie::insert(INode *startNode, SNode *newNode, uint8_t level) {
         startNode->swapToCopyWithInsertedChild(newNode, path);
         return true;
     } else {
-        if (subNode->type == S_NODE && level == 12) {
+        if (subNode->type == S_NODE && (level == 12 || static_cast<SNode*>(subNode)->contains(newNode))) {
             newNode->merge(static_cast<SNode *>(subNode));
             startNode->swapToCopyWithReplacedChild(newNode, path);
             return true;
@@ -142,32 +171,35 @@ bool Trie::remove(string k) {
     if (root == nullptr) {
         root = new INode(new CNode());
     }
-    return remove(root, k, generateHash(k), 0);
+    return remove(root, k, generateHash(k), 0, nullptr);
 }
 
-bool Trie::remove(INode *startNode, string k, uint64_t hash, uint8_t level) {
-    Node *nextNode = startNode->main->getSubNode(extractHashPartByLevel(hash, level));
+bool Trie::remove(INode *startNode, string k, uint64_t hash, uint8_t level, INode *iParent) {
+    Node *subNode = startNode->main->getSubNode(extractHashPartByLevel(hash, level));
 
-    if (nextNode == nullptr) return false;
+    if (subNode == nullptr) return false;
 
-    switch (nextNode->type) {
+    switch (subNode->type) {
         case S_NODE: {
-            if (static_cast<SNode *>(nextNode)->contains(k)) {
-                startNode->swapToCopyWithReplacedChild(nullptr, extractHashPartByLevel(hash, level));
-                startNode->tryToContract(extractHashPartByLevel(hash, level));
-                return true;
+            if (static_cast<SNode *>(subNode)->contains(k)) {
+                startNode->swapToCopyWithDeletedChild(extractHashPartByLevel(hash, level));
+                break;
             }
         }
         case I_NODE: {
-            return remove(static_cast<INode *>(nextNode), k, hash, level + 1);
+            while (!remove(static_cast<INode *>(subNode), k, hash, level + 1, startNode));
+            break;
         }
         default: {
             static_assert(true, "Trie is build wrong");
             return false;
         }
     }
-}
 
+    tryToContract(iParent, startNode, extractHashPartByLevel(hash, level - 1));
+
+    return true;
+}
 
 LookupResult createLookupResult(int value) {
     return {value, true};
@@ -180,6 +212,15 @@ uint64_t SNode::getHash() {
 bool SNode::contains(string k) {
     for (auto &p: this->pair) {
         if (p.key == k) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool SNode::contains(SNode* node) {
+    for (auto &p: node->pair) {
+        if (this->contains(p.key)) {
             return true;
         }
     }
