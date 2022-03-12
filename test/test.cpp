@@ -575,7 +575,7 @@ TEST(TRIE, HAPPY_FLOW___INSERTING_THE_SAME_KEY_MANY_TIMES_BY_MANY_THREAD) {
     // arrange
     Trie<int, int> trie;
     int thread_count = 10;
-    int iteration_count = 1000000;
+    int iteration_count = 10000;
 
     vector<pthread_t> thread(thread_count);
     vector<vector<void *>> attr(thread_count);
@@ -596,7 +596,6 @@ TEST(TRIE, HAPPY_FLOW___INSERTING_THE_SAME_KEY_MANY_TIMES_BY_MANY_THREAD) {
             for (int i = 0; i < *iteration_count; i++) {
                 trie->insert(0, *id);
             }
-
 
             pthread_exit(nullptr);
         }, &attr[i]);
