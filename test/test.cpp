@@ -542,14 +542,14 @@ TEST(TRIE, HAPPY_FLOW___RANDOM_REMOVING_BY_MANY_THREAD) {
             int *iteration_count = (int *) (*static_cast<vector<void *> *>(args))[2];
             set<int> keys;
             for (int i = (*id) * (*iteration_count); i < (*id + 1) * (*iteration_count); i++) {
-                cout << "LOG[" + to_string(*id) + "] " + "key=" + to_string(i) +  " inserted \n";
+//                cout << "LOG[" + to_string(*id) + "] " + "key=" + to_string(i) +  " inserted \n";
                 keys.insert(i);
                 trie->insert(i, i);
             }
             while (!keys.empty()) {
                 int key = rand() % (*iteration_count) + (*id) * (*iteration_count);
                 if (trie->remove(key)) {
-                    cout << "LOG[" + to_string(*id) + "] " + "key=" + to_string(key) +  "removed \n";
+//                    cout << "LOG[" + to_string(*id) + "] " + "key=" + to_string(key) +  "removed \n";
                     keys.erase(key);
                 }
             }
