@@ -4,6 +4,7 @@
 #include <bitset>
 #include "utils.h"
 #include <set>
+#include <mutex>
 
 #pragma once
 using namespace std;
@@ -253,6 +254,7 @@ template<class K, class V>
 class Trie {
 private:
     INode<K, V> *root;
+    mutex mx;
 public:
 
     Trie() {
@@ -264,26 +266,38 @@ public:
     }
 
     LookupResult lookup(K k) {
+        mx.lock();
+
         if (root == nullptr) {
             root = new INode<K, V>(new CNode<K, V>());
         }
-        return lookup(root, k, generateSimpleHash(k), 0);
+        LookupResult res = lookup(root, k, generateSimpleHash(k), 0);
+        mx.unlock();
+        return res;
     }
 
     bool remove(K key) {
+        mx.lock();
+
         if (root == nullptr) {
             root = new INode<K, V>(new CNode<K, V>());
         }
-        return this->remove(nullptr, root, key, generateSimpleHash(key), 0);
+        bool res = this->remove(nullptr, root, key, generateSimpleHash(key), 0);
+        mx.unlock();
+        return res;
     }
 
 
     bool insert(K key, V value) {
+        mx.lock();
+
         if (root == nullptr) {
             root = new INode<K, V>(new CNode<K, V>());
         }
         SNode<K, V> *subNode = createSNode(key, value, generateSimpleHash(key));
-        return insert(root, subNode, 0);
+        insert(root, subNode, 0);
+
+        mx.unlock();
     }
 
 

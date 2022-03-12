@@ -8,7 +8,6 @@
 
 using namespace std;
 
-
 uint64_t generateSimpleHash(string);
 uint64_t generateSimpleHash(int);
 
