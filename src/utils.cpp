@@ -1,7 +1,5 @@
 #include "../include/utils.h"
 
-
-
 uint64_t generateSimpleHash(int key){
     return key;
 }

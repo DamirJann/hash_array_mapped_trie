@@ -62,7 +62,7 @@ void walk_and_collect(Height<K, V> currHeight, vector<Height<K, V>> &hs, vector<
         es.push_back({"", currHeight.id, c.id});
 
         for (uint8_t path = 0b00000; path < 0b11111; path++) {
-            CNode *n = reinterpret_cast<CNode *>(c.v);
+            CNode<K, V> *n = reinterpret_cast<CNode<K, V> *>(c.v);
             if (n->getSubNode(path) != nullptr) {
                 Height<K, V> child(n->getSubNode(path));
                 hs.push_back(child);
