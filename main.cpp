@@ -6,7 +6,7 @@ int main(){
     Trie<string, int> trie;
 
     for (int i = 0; i < 200; i++){
-        fprintf(stdout, "for k%d hash is %lu\n", i, generateHash("k"+ to_string(i)));
+        fprintf(stdout, "for k%d hash is %lu\n", i, generateSimpleHash("k"+ to_string(i)));
         trie.insert("k"+ to_string(i), i);
     }
     trie.remove("k300");

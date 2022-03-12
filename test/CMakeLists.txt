@@ -8,7 +8,7 @@ add_subdirectory(../google_tests/lib/googletest googletests)
 # TEST TARGET
 add_executable(
         run_tests
-        test.cpp ../src/trie.cpp ../src/utils.cpp
+        test.cpp ../src/utils.cpp
 )
 
 target_link_libraries(

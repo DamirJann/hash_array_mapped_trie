@@ -244,14 +244,14 @@ public:
         if (root == nullptr) {
             root = new INode<K, V>(new CNode());
         }
-        return lookup(root, k, generateHash(k), 0);
+        return lookup(root, k, generateSimpleHash(k), 0);
     }
 
     bool remove(K key) {
         if (root == nullptr) {
             root = new INode<K, V>(new CNode());
         }
-        return this->remove(nullptr, root, key, generateHash(key), 0);
+        return this->remove(nullptr, root, key, generateSimpleHash(key), 0);
     }
 
 
@@ -259,7 +259,7 @@ public:
         if (root == nullptr) {
             root = new INode<K, V>(new CNode());
         }
-        SNode<K, V> *subNode = createSNode(key, value, generateHash(key));
+        SNode<K, V> *subNode = createSNode(key, value, generateSimpleHash(key));
         return insert(root, subNode, 0);
     }
 

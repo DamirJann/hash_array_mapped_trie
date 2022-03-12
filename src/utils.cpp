@@ -2,16 +2,16 @@
 
 
 
-uint64_t generateHash(int k){
-    return k % 1000;
+uint64_t generateSimpleHash(int key){
+    return key;
 }
 
-uint64_t generateHash(string k) {
+uint64_t generateSimpleHash(string key) {
     uint64_t hash = 0;
-    for (size_t i = 0; i < k.size(); i++) {
-        hash += k[i] * i;
+    for (size_t i = 0; i < key.size(); i++) {
+        hash += key[i] * i;
     }
-    return hash % 1000;
+    return hash;
 }
 
 uint8_t extractHashPartByLevel(uint64_t hash, uint8_t level) {
