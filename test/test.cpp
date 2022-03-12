@@ -101,7 +101,7 @@ TEST(BITMAP, HAPPY_FLOW__UNSET_AT_FALSE) {
 
 TEST(CNode, HAPPY_FLOW_GET__NODE_NOT_FOUND) {
     // arrange
-    CNode node;
+    CNode<string, int> node;
     node.bmp = {0b100001};
 
     // assert
@@ -270,6 +270,77 @@ TEST(TRIE, HAPPY_FLOW__REMOVE_ALL_KEYS) {
 //    ASSERT_EQ(trie.lookup("k1").value, 2);
 //    ASSERT_EQ(static_cast<INode*>(trie.getRoot())->main->array[0]->type, S_NODE);
 //}
+
+TEST(TRIE, HAPPY_FLOW__INSERTING_AND_REMOVING_KEYS_BY_ONE_THREAD) {
+    // arrange
+    Trie<int, int> trie;
+    int count = 1000000;
+
+    // act & assert
+    for (int i = 0; i < count; i++) {
+        trie.insert(i, i);
+    }
+
+    for (int i = 0; i < count; i++) {
+        ASSERT_EQ(trie.lookup(i).isFound, true);
+        ASSERT_EQ(trie.lookup(i).value, i);
+    }
+
+    for (int i = 0; i < count; i++) {
+        ASSERT_EQ(trie.remove(i), true);
+    }
+
+    // assert
+    for (int i = 0; i < count; i++) {
+        ASSERT_EQ(trie.lookup(i).isFound, false);
+    }
+
+}
+
+
+//TEST(TRIE, HAPPY_FLOW__INSERTING_AND_REMOVING_KEYS_BY_MANY_THREAD) {
+//    // arrange
+//    Trie<int, int> trie;
+//    int thread_count = 100;
+//    int iteration_count = 100;
+//
+//
+//
+//    vector<pthread_t> thread(thread_count);
+//    vector<vector<void *>> attr(thread_count);
+//    for (int i = 0; i < attr.size(); i++){
+//        attr[i] = {&trie, new int(i), new int(iteration_count)};
+//    }
+//
+//
+//    for (int i = 0; i < thread.size(); i++) {
+//        pthread_create(&thread[i], nullptr, [](void *args) -> void * {
+//            auto *trie = (Trie<int, int> *) (*static_cast<vector<void *> *>(args))[0];
+//            int *id = (int *) (*static_cast<vector<void *> *>(args))[1];
+//            int *iteration_count = (int *) (*static_cast<vector<void *> *>(args))[2];
+//
+//            for (int i = *id * (*iteration_count) ; i < (*id+1) * (*iteration_count); i++){
+//                trie->insert(i, i);
+//            }
+//
+//            pthread_exit(nullptr);
+//        }, &attr[i]);
+//
+//    }
+//
+//    for (unsigned long i: thread) {
+//        pthread_join(i, nullptr);
+//    }
+//
+//    // assert
+//    for (int i = 0; i < iteration_count * thread_count; i++){
+//        ASSERT_EQ(trie.lookup(i).isFound, true);
+//        ASSERT_EQ(trie.lookup(i).value, i);
+//    }
+//}
+
+
+
 
 
 
