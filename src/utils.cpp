@@ -1,5 +1,11 @@
 #include "../include/utils.h"
 
+
+
+uint64_t generateHash(int k){
+    return k % 1000;
+}
+
 uint64_t generateHash(string k) {
     uint64_t hash = 0;
     for (size_t i = 0; i < k.size(); i++) {

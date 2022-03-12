@@ -108,136 +108,14 @@ TEST(CNode, HAPPY_FLOW_GET__NODE_NOT_FOUND) {
     ASSERT_EQ(node.getSubNode(0b11111), nullptr);
 }
 
-TEST(CNode, HAPPY_FLOW_GET_NODE) {
-    // arrange
-    auto *first_node = new SNode(" ", 0, 0);
-    auto *second_node = new SNode(" ", 0, 0);
-    CNode node;
-    node.bmp = {0b10001};
-    node.array = {first_node, second_node};
 
-    // act & assert
-    ASSERT_EQ(node.getSubNode(0), first_node);
-    ASSERT_EQ(node.getSubNode(4), second_node);
-}
 
-//TEST(CNode, HAPPY_FLOW__GET_ARRAY_INDEX_BY_BMP) {
-//    // arrange
-//    CNode node;
-//    node.bmp = {0b100110101};
-//
-//    // act & assert
-//    ASSERT_EQ(node.getArrayIndexByBmp(0), 0);
-//    ASSERT_EQ(node.getArrayIndexByBmp(2), 1);
-//    ASSERT_EQ(node.getArrayIndexByBmp(4), 2);
-//    ASSERT_EQ(node.getArrayIndexByBmp(5), 3);
-//    ASSERT_EQ(node.getArrayIndexByBmp(8), 4);
-//}
-//
-//TEST(UTILS, HAPPY__FLOW_GET_PATH_OF_HASH_BY_LEVEL) {
-//    // arrange
-//    SNode node("abcdefg1", 0, generateHash("abcdefg1"));
-//
-//    // act & assert
-//    ASSERT_EQ(extractHashPartByLevel(node.getHash(), 0), 0b10111);
-//    ASSERT_EQ(extractHashPartByLevel(node.getHash(), 1), 0b01110);
-//    ASSERT_EQ(extractHashPartByLevel(node.getHash(), 2), 0b00000);
-//}
-//
-//// BEFORE: i1 -> c1
-////  AFTER: i1 -> c1 -> i2 -> c2 -> k1, k2
-//TEST(TRIE, HAPPY_FLOW__INSERT_TWO_KEYS_WITH_SAME_PREFIX) {
-//    // arrange
-//    Trie trie;
-//    SNode *first = new SNode("", 1, 0b1010001);
-//    SNode *second = new SNode("", 2, 0b1110001);
-//
-//    // act
-//    trie.insert(trie.root, first, 0);
-//    trie.insert(trie.root, second, 0);
-//
-//    // assert
-//    INode *i2 = static_cast<INode *>(trie.root->main->getSubNode(0b10001));
-//    SNode *k1 = static_cast<SNode *>(i2->main->getSubNode(0b00010));
-//    SNode *k2 = static_cast<SNode *>(i2->main->getSubNode(0b00011));
-//
-//
-//    ASSERT_EQ(k1->getValue(""), 1);
-//    ASSERT_EQ(k2->getValue(""), 2);
-//}
-//
-//// BEFORE: i1 -> c1
-////  AFTER: i1 -> c1 -> k1, k2
-//TEST(TRIE, HAPPY_FLOW__INSERT_TWO_KEYS_WITH_DIFFERENT_PREFIXIES) {
-//    // arrange
-//    Trie trie;
-//    SNode *first = new SNode("", 1, 0b11111);
-//    SNode *second = new SNode("", 2, 0b00000);
-//
-//    // act
-//    trie.insert(trie.root, first, 0);
-//    trie.insert(trie.root, second, 0);
-//
-//    // assert
-//    SNode *k1 = static_cast<SNode *>(trie.root->main->getSubNode(0b11111));
-//    SNode *k2 = static_cast<SNode *>(trie.root->main->getSubNode(0b00000));
-//
-//    ASSERT_EQ(k1->getValue(""), 1);
-//    ASSERT_EQ(k2->getValue(""), 2);
-//}
-//
-//// BEFORE: i1 -> c1
-////  AFTER: i1 -> c1 -> k1, (i2 -> c2 -> k2, k3)
-//TEST(TRIE, HAPPY_FLOW__INSERT_THREE_KEYS) {
-//    // arrange
-//    Trie trie;
-//    SNode *first = new SNode("", 1, 0b00000);
-//    SNode *second = new SNode("", 2, 0b00001);
-//    SNode *third = new SNode("", 3, 0b1111100001);
-//
-//    // act
-//    trie.insert(trie.root, first, 0);
-//    trie.insert(trie.root, second, 0);
-//    trie.insert(trie.root, third, 0);
-//
-//    // assert
-//    SNode *k1 = static_cast<SNode *>(trie.root->main->getSubNode(0b00000));
-//    INode *i2 = static_cast<INode *>(trie.root->main->getSubNode(0b00001));
-//    SNode *k2 = static_cast<SNode *>(i2->main->getSubNode(0b00000));
-//    SNode *k3 = static_cast<SNode *>(i2->main->getSubNode(0b11111));
-//
-//    ASSERT_EQ(k1->getValue(""), 1);
-//    ASSERT_EQ(k2->getValue(""), 2);
-//    ASSERT_EQ(k3->getValue(""), 3);
-//}
-//
-//// BEFORE: i1 -> c1
-////  AFTER: i1 -> c1 -> i2 -> c2 -> i3 -> c3 -> k1, k2
-//TEST(TRIE, HAPPY_FLOW__INSERT_TWO_KEYS_WITH_SAME_BIGGER_PREFIX) {
-//    // arrange
-//    Trie trie;
-//    SNode *first = new SNode("", 1, 0b000001111100000);
-//    SNode *second = new SNode("", 2, 0b101011111100000);
-//
-//    // act
-//    trie.insert(trie.root, first, 0);
-//    trie.insert(trie.root, second, 0);
-//
-//    // assert
-//    INode *i2 = static_cast<INode *>(trie.root->main->getSubNode(0b000000));
-//    INode *i3 = static_cast<INode *>(i2->main->getSubNode(0b111111));
-//    SNode *k1 = static_cast<SNode *>(i3->main->getSubNode(0b00000));
-//    SNode *k2 = static_cast<SNode *>(i3->main->getSubNode(0b10101));
-//
-//    ASSERT_EQ(k1->getValue(""), 1);
-//    ASSERT_EQ(k2->getValue(""), 2);
-//}
 
 // BEFORE: i1 -> c1
 //  AFTER: i1 -> c1 -> i2 -> c2 -> i3 -> c3 -> k1, k2
 TEST(TRIE, HAPPY_FLOW__INSERT_TO_EMPTY_TRIE) {
     // arrange
-    Trie trie;
+    Trie<string, int> trie;
 
     // act
     trie.insert("abc", 1);
@@ -249,7 +127,7 @@ TEST(TRIE, HAPPY_FLOW__INSERT_TO_EMPTY_TRIE) {
 
 TEST(TRIE, HAPPY_FLOW__LOOKUP) {
     // arrange
-    Trie trie;
+    Trie<string, int> trie;
 
     trie.insert("k1", 1);
     trie.insert("k2", 2);
@@ -336,7 +214,7 @@ TEST(TRIE, HAPPY_FLOW__LOOKUP) {
 
 TEST(TRIE, HAPPY_FLOW__REMOVE_ALL_KEYS) {
     // arrange
-    Trie trie;
+    Trie<string, int> trie;
     trie.insert("k1", 1);
     trie.insert("k2", 2);
     trie.insert("k3", 3);
@@ -361,53 +239,37 @@ TEST(TRIE, HAPPY_FLOW__REMOVE_ALL_KEYS) {
 
 }
 
-// BEFORE:  i1 -> c1 -> k1
-//  AFTER:  i1' -> c1' -> k1'
-TEST(INODE, HAPPY_FLOW__SWAP_TO_COPY_WITH_REPLACED_CHILD_CREATE_NEW_COPY) {
-    // arrange
-    CNode *c1 = new CNode();
-    SNode *k1 = new SNode("", 1, 0);
-    c1->insertChild(k1, 0b00000);
-    INode *i1 = new INode(c1);
-
-    // act
-    i1->swapToCopyWithInsertedChild(new SNode("", 1, 1), 0b11111);
-
-    // assert
-    ASSERT_NE(i1->main, c1);
-    ASSERT_NE(&i1->main->bmp, &c1->bmp);
-    ASSERT_NE(&i1->main->array, &c1->array);
-}
-
-TEST(REMOVE, HAPPY_FLOW_CONTRACTING_AFTER_REMOVING){
-    // arrange
-    Trie trie;
-    trie.insert("k8", 8);
-    trie.insert("k23", 23);
-
-    // act
-    trie.remove("k8");
-
-    // assert
-    ASSERT_EQ(trie.lookup("k8").isFound, false);
-    ASSERT_EQ(trie.lookup("k23").isFound, true);
-    ASSERT_EQ(static_cast<INode*>(trie.getRoot())->main->array[0]->type, S_NODE);
-}
-
-TEST(INSERT, HAPPY_FLOW_INSERT_THE_SAME_KEYS){
-    // arrange
-    Trie trie;
-
-    // act
-    trie.insert("k1", 1);
-    trie.insert("k1", 2);
 
 
-    // assert
-    ASSERT_EQ(trie.lookup("k1").isFound, true);
-    ASSERT_EQ(trie.lookup("k1").value, 2);
-    ASSERT_EQ(static_cast<INode*>(trie.getRoot())->main->array[0]->type, S_NODE);
-}
+//TEST(REMOVE, HAPPY_FLOW_CONTRACTING_AFTER_REMOVING){
+//    // arrange
+//    Trie<string, int> trie;
+//    trie.insert("k8", 8);
+//    trie.insert("k23", 23);
+//
+//    // act
+//    trie.remove("k8");
+//
+//    // assert
+//    ASSERT_EQ(trie.lookup("k8").isFound, false);
+//    ASSERT_EQ(trie.lookup("k23").isFound, true);
+//    ASSERT_EQ(static_cast<INode*>(trie.getRoot())->main->array[0]->type, S_NODE);
+//}
+//
+//TEST(INSERT, HAPPY_FLOW_INSERT_THE_SAME_KEYS){
+//    // arrange
+//    Trie<string, int> trie;
+//
+//    // act
+//    trie.insert("k1", 1);
+//    trie.insert("k1", 2);
+//
+//
+//    // assert
+//    ASSERT_EQ(trie.lookup("k1").isFound, true);
+//    ASSERT_EQ(trie.lookup("k1").value, 2);
+//    ASSERT_EQ(static_cast<INode*>(trie.getRoot())->main->array[0]->type, S_NODE);
+//}
 
 
 
