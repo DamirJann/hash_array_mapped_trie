@@ -4,15 +4,15 @@
 
 int main(){
     Trie<string, int> trie;
-
-    for (int i = 0; i < 100; i++){
-        fprintf(stdout, "for k%d hash is %lu\n", i, generateSimpleHash("k"+ to_string(i)));
-        trie.insert("k"+ to_string(i), i);
-    }
-    for (int i = 0; i < 100; i++){
-        cout << trie.remove("k"+ to_string(i));
-        cout << " removed " << i << endl;
-    }
+    trie.lookup("0");
+//    for (int i = 0; i < 100; i++){
+//        fprintf(stdout, "for k%d hash is %lu\n", i, generateSimpleHash("k"+ to_string(i)));
+//        trie.insert("k"+ to_string(i), i);
+//    }
+//    for (int i = 0; i < 100; i++){
+//        cout << trie.remove("k"+ to_string(i));
+//        cout << " removed " << i << endl;
+//    }
 
 
 

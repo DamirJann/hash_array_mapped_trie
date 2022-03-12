@@ -4,6 +4,7 @@
 #include <bitset>
 #include "utils.h"
 #include <set>
+#include <mutex>
 
 #pragma once
 using namespace std;
@@ -35,6 +36,7 @@ class Node {
 public:
     NodeType type;
 protected:
+
     Node(NodeType type) {
         this->type = type;
     }
@@ -232,6 +234,12 @@ struct LookupResult {
     bool isFound;
 };
 
+bool operator==(const LookupResult a, const LookupResult b) {
+    if (!a.isFound && !b.isFound) return true;
+    if (!a.isFound || !b.isFound) return false;
+    return a.value == b.value;
+}
+
 LookupResult createLookupResult(int value) {
     return {value, true};
 }
@@ -253,6 +261,7 @@ template<class K, class V>
 class Trie {
 private:
     INode<K, V> *root;
+    mutex mx;
 public:
 
     Trie() {
@@ -264,30 +273,43 @@ public:
     }
 
     LookupResult lookup(K k) {
+        mx.lock();
+
         if (root == nullptr) {
             root = new INode<K, V>(new CNode<K, V>());
         }
-        return lookup(root, k, generateSimpleHash(k), 0);
+        LookupResult res = lookup(root, k, generateSimpleHash(k), 0);
+        mx.unlock();
+        return res;
     }
 
     bool remove(K key) {
+        mx.lock();
+
         if (root == nullptr) {
             root = new INode<K, V>(new CNode<K, V>());
         }
-        return this->remove(nullptr, root, key, generateSimpleHash(key), 0);
+        bool res = this->remove(nullptr, root, key, generateSimpleHash(key), 0);
+        mx.unlock();
+        return res;
     }
 
 
     bool insert(K key, V value) {
+        mx.lock();
+
         if (root == nullptr) {
             root = new INode<K, V>(new CNode<K, V>());
         }
         SNode<K, V> *subNode = createSNode(key, value, generateSimpleHash(key));
-        return insert(root, subNode, 0);
+        insert(root, subNode, 0);
+        mx.unlock();
+        return true;
     }
 
 
 private:
+
     LookupResult lookup(INode<K, V> *startNode, K key, uint64_t hash, uint8_t level) {
         Node *nextNode = startNode->main->getSubNode(extractHashPartByLevel(hash, level));
 
@@ -317,20 +339,17 @@ private:
 
         switch (subNode->type) {
             case S_NODE: {
-                if (static_cast<SNode<K, V> *>(subNode)->contains(key)) {
-                    currentNode->swapToCopyWithDeletedKey(key, extractHashPartByLevel(hash, level));
-                } else {
+                if (!static_cast<SNode<K, V> *>(subNode)->contains(key)) {
                     return false;
                 }
+                currentNode->swapToCopyWithDeletedKey(key, extractHashPartByLevel(hash, level));
                 break;
             }
             case I_NODE: {
-                if (this->remove(currentNode, static_cast<INode<K, V> *>(subNode), key, hash, level + 1)){
-                    tryToContract(iParent, currentNode, extractHashPartByLevel(hash, level - 1));
-                    return true;
-                } else {
+                if (!this->remove(currentNode, static_cast<INode<K, V> *>(subNode), key, hash, level + 1)) {
                     return false;
                 }
+                break;
             }
             default: {
                 static_assert(true, "Trie is build wrong");
@@ -339,7 +358,6 @@ private:
         }
 
         tryToContract(iParent, currentNode, extractHashPartByLevel(hash, level - 1));
-
         return true;
     }
 
