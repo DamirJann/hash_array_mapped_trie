@@ -2,19 +2,39 @@
 #include "include/utils.h"
 #include "include/visualize.h"
 
+#include <random>
+#include <pthread.h>
+
 int main(){
-    Trie<string, int> trie;
-    trie.lookup("0");
-//    for (int i = 0; i < 100; i++){
-//        fprintf(stdout, "for k%d hash is %lu\n", i, generateSimpleHash("k"+ to_string(i)));
-//        trie.insert("k"+ to_string(i), i);
-//    }
-//    for (int i = 0; i < 100; i++){
-//        cout << trie.remove("k"+ to_string(i));
-//        cout << " removed " << i << endl;
-//    }
+    // arrange
+    Trie<int, int> trie;
+    int thread_count = 2;
+    int iteration_count = 100000;
 
+    vector<pthread_t> thread(thread_count);
+    vector<vector<void *>> attr(thread_count);
+    for (int i = 0; i < attr.size(); i++) {
+        attr[i] = {&trie, new int(i), new int(iteration_count)};
+    }
 
+    for (int i = 0; i < thread.size(); i++) {
+        pthread_create(&thread[i], nullptr, [](void *args) -> void * {
+            auto *trie = (Trie<int, int> *) (*static_cast<vector<void *> *>(args))[0];
+            int *id = (int *) (*static_cast<vector<void *> *>(args))[1];
+            int *iteration_count = (int *) (*static_cast<vector<void *> *>(args))[2];
+
+            for (int i = *id * (*iteration_count); i < (*id + 1) * (*iteration_count); i++) {
+                trie->insert(i, i);
+            }
+
+            pthread_exit(nullptr);
+        }, &attr[i]);
+
+    }
+
+    for (unsigned long i: thread) {
+        pthread_join(i, nullptr);
+    }
 
     ofstream f = std::ofstream("graph.txt");
     visualize(f, &trie);

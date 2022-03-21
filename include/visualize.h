@@ -15,6 +15,14 @@ int counter = 0;
 const int MAX_EDGE_COUNT = 10000;
 const int MAX_HEIGHT_COUNT = 10000;
 
+string toString(int k){
+    return to_string(k);
+}
+
+string toString(string k){
+    return k;
+}
+
 template<class K, class V>
 struct Height {
     Height(Node *v) {
@@ -27,16 +35,16 @@ struct Height {
 
     string getLabel() {
         switch (v->type) {
-            case I_NODE: {
+            case INODE: {
                 return "I" + to_string(id);
             }
-            case C_NODE:
+            case CNODE:
                 return "C" + to_string(id);
-            case S_NODE: {
+            case SNODE: {
                 string label = "";
                 label += "hs: " + to_string(static_cast<SNode<K, V> *>(this->v)->getHash()) + "\n\n";
                 for (auto &p: static_cast<SNode<K, V> *>(v)->pair) {
-                    label += "(" + p.key + ", " + to_string(p.value) + ") \n";
+                    label += "(" + toString(p.key) + ", " + toString(p.value) + ") \n";
                 }
                 return label;
             }
@@ -55,7 +63,7 @@ struct Edge {
 
 template<class K, class V>
 void walk_and_collect(Height<K, V> currHeight, vector<Height<K, V>> &hs, vector<Edge> &es) {
-    if (currHeight.v->type == I_NODE) {
+    if (currHeight.v->type == INODE) {
         Height<K, V> c(static_cast<INode<K, V> *>(currHeight.v)->main);
         hs.push_back(c);
 
