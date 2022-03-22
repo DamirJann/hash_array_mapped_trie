@@ -11,7 +11,6 @@ using namespace std;
 
 
 //string fmt_assert_failed = "Assert failed: %s != %s";
-//const char* fmt_thread_log = "LOG[%d] %s\n";
 
 template<class A, class B>
 void ASSERT_EQUAL(A got,B exp){

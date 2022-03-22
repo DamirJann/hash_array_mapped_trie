@@ -324,8 +324,8 @@ TEST(TRIE, HAPPY_FLOW__INSERTING_AND_LOOKING_UP_BY_MANY_THREAD) {
 TEST(TRIE, HAPPY_FLOW__INSERTING_BY_MANY_THREAD) {
     // arrange
     Trie<int, int> trie;
-    int thread_count = 2;
-    int iteration_count = 100000;
+    int thread_count = 10;
+    int iteration_count = 1000000;
 
     vector<pthread_t> thread(thread_count);
     vector<vector<void *>> attr(thread_count);

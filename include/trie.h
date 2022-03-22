@@ -308,7 +308,8 @@ CNode<K, V> *buildCopyWithMergedChild(CNode<K, V> *copy, SNode<K, V> *subNode, S
 }
 
 template<class K, class V>
-CNode<K, V> *buildCopyWithDownChild(CNode<K, V> *c1, SNode<K, V> *child2, SNode<K, V> *child3, uint8_t level, uint8_t path) {
+CNode<K, V> *
+buildCopyWithDownChild(CNode<K, V> *c1, SNode<K, V> *child2, SNode<K, V> *child3, uint8_t level, uint8_t path) {
     auto *c2 = new CNode<K, V>();
     c2->insertChild(child2, extractHashPartByLevel(child2->getHash(), level + 1));
     c2->insertChild(child3, extractHashPartByLevel(child3->getHash(), level + 1));
@@ -317,6 +318,14 @@ CNode<K, V> *buildCopyWithDownChild(CNode<K, V> *c1, SNode<K, V> *child2, SNode<
 
 
     return c1;
+}
+
+
+template<class K, class V>
+CNode<K, V> *buildCNodeWithSNodeChild(SNode<K, V> *child, uint8_t path) {
+    CNode<K, V> *parent = new CNode<K, V>();
+    parent->insertChild(child, path);
+    return parent;
 }
 
 
@@ -359,19 +368,19 @@ public:
 
 
     bool insert(K key, V value) {
-        if (root->main.load() == nullptr) {
-            // root -> i -> s
-            auto *i = new CNode<K, V>();
-            auto *s = new SNode<K, V>(key, value);
-            i->insertChild(s, extractHashPartByLevel(s->getHash(), 0));
+        while (true) {
+            if (root->main.load() == nullptr) {
+                // root -> i -> s
+                auto *i = new CNode<K, V>();
+                auto *s = new SNode<K, V>(key, value);
+                i->insertChild(s, extractHashPartByLevel(s->getHash(), 0));
 
-            if (!root->main.compare_exchange_weak(CNODE_NULL, i)) {
-                insert(key, value);
+                if (root->main.compare_exchange_weak(CNODE_NULL, i)) return true;
+            } else {
+                if (insert(root, new SNode<K, V>(key, value), 0)) return true;
             }
-        } else if (!insert(root, new SNode<K, V>(key, value), 0)) {
-            insert(key, value);
         }
-        return true;
+
     }
 
 
@@ -430,18 +439,25 @@ private:
     }
 
     bool insert(INode<K, V> *startNode, SNode<K, V> *newNode, uint8_t level) {
+
         CNode<K, V> *exp = startNode->waitMain();
         int path = extractHashPartByLevel(newNode->getHash(), level);
         CNode<K, V> *orgCopy = getCopy(exp);
         Node *subNode = orgCopy->getSubNode(path);
 
+
         if (subNode == nullptr) {
-            startNode->swapToCopyWithInsertedChild(newNode, path);
+            CNode<K, V> *updated = orgCopy;
+            updated->insertChild(newNode, path);
+            if (!startNode->main.compare_exchange_weak(exp, updated)) {
+
+                return insert(startNode, newNode, level);
+            }
             return true;
         } else {
             switch (subNode->type) {
                 case SNODE: {
-                    auto * sSubNode = static_cast<SNode<K, V> *>(subNode);
+                    auto *sSubNode = static_cast<SNode<K, V> *>(subNode);
                     if (sSubNode->contains(newNode)) {
                         CNode<K, V> *updated = buildCopyWithReplacedPair(orgCopy, sSubNode,
                                                                          newNode, path);
@@ -453,14 +469,16 @@ private:
                         CNode<K, V> *updated = buildCopyWithMergedChild(orgCopy, sSubNode,
                                                                         newNode, path);
                         if (!startNode->main.compare_exchange_weak(exp, updated)) {
+
                             return insert(startNode, newNode, level);
                         }
                         return true;
                     } else {
                         CNode<K, V> *updated = buildCopyWithDownChild<K, V>(orgCopy, newNode, sSubNode, level, path);
-                        if (!startNode->main.compare_exchange_weak(exp, updated)){
+                        if (!startNode->main.compare_exchange_weak(exp, updated)) {
                             return insert(startNode, newNode, level);
                         }
+                        return true;
                     }
                 }
                 case INODE: {
@@ -474,11 +492,6 @@ private:
             }
         }
     }
+
 };
 
-template<class K, class V>
-CNode<K, V> *buildCNodeWithSNodeChild(SNode<K, V> *child, uint8_t path) {
-    CNode<K, V> *parent = new CNode<K, V>();
-    parent->insertChild(child, path);
-    return parent;
-}

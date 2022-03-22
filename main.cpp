@@ -4,11 +4,13 @@
 
 #include <random>
 #include <pthread.h>
+const char* fmt_thread_log = "LOG[%d] %s\n";
+
 
 int main(){
     // arrange
     Trie<int, int> trie;
-    int thread_count = 2;
+    int thread_count = 20;
     int iteration_count = 100000;
 
     vector<pthread_t> thread(thread_count);
@@ -24,6 +26,7 @@ int main(){
             int *iteration_count = (int *) (*static_cast<vector<void *> *>(args))[2];
 
             for (int i = *id * (*iteration_count); i < (*id + 1) * (*iteration_count); i++) {
+                cout << "LOG[" <<  to_string(*id) <<  "]:" << " Inserted "  << i << endl;
                 trie->insert(i, i);
             }
 
@@ -36,9 +39,9 @@ int main(){
         pthread_join(i, nullptr);
     }
 
-    ofstream f = std::ofstream("graph.txt");
-    visualize(f, &trie);
-    system("dot -Tpng ./graph.txt -o graph.png");
-    f.close();
+//    ofstream f = std::ofstream("graph.txt");
+//    visualize(f, &trie);
+//    system("dot -Tpng ./graph.txt -o graph.png");
+//    f.close();
 
 }
