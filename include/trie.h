@@ -102,7 +102,7 @@ public:
 
 public:
     uint64_t hash{};
-    set<Pair<K, V>> pair;
+    set <Pair<K, V>> pair;
 };
 
 template<class K, class V>
@@ -374,10 +374,13 @@ public:
                 auto *i = new CNode<K, V>();
                 auto *s = new SNode<K, V>(key, value);
                 i->insertChild(s, extractHashPartByLevel(s->getHash(), 0));
-
-                if (root->main.compare_exchange_weak(CNODE_NULL, i)) return true;
+                if (root->main.compare_exchange_weak(CNODE_NULL, i)) {
+                    return true;
+                }
             } else {
-                if (insert(root, new SNode<K, V>(key, value), 0)) return true;
+                if (insert(root, new SNode<K, V>(key, value), 0)) {
+                    return true;
+                }
             }
         }
 
@@ -440,6 +443,7 @@ private:
 
     bool insert(INode<K, V> *startNode, SNode<K, V> *newNode, uint8_t level) {
 
+
         CNode<K, V> *exp = startNode->waitMain();
         int path = extractHashPartByLevel(newNode->getHash(), level);
         CNode<K, V> *orgCopy = getCopy(exp);
@@ -450,10 +454,8 @@ private:
             CNode<K, V> *updated = orgCopy;
             updated->insertChild(newNode, path);
             if (!startNode->main.compare_exchange_weak(exp, updated)) {
-
-                return insert(startNode, newNode, level);
+                return false;
             }
-            return true;
         } else {
             switch (subNode->type) {
                 case SNODE: {
@@ -462,19 +464,18 @@ private:
                         CNode<K, V> *updated = buildCopyWithReplacedPair(orgCopy, sSubNode,
                                                                          newNode, path);
                         if (!startNode->main.compare_exchange_weak(exp, updated)) {
-                            return insert(startNode, newNode, level);
+                            return false;
                         }
                         return true;
                     } else if (level == 12) {
                         CNode<K, V> *updated = buildCopyWithMergedChild(orgCopy, sSubNode,
                                                                         newNode, path);
                         if (!startNode->main.compare_exchange_weak(exp, updated)) {
-
-                            return insert(startNode, newNode, level);
+                            return false;
                         }
-                        return true;
                     } else {
-                        CNode<K, V> *updated = buildCopyWithDownChild<K, V>(orgCopy, newNode, sSubNode, level, path);
+                        CNode<K, V> *updated = buildCopyWithDownChild<K, V>(orgCopy, newNode, sSubNode, level,
+                                                                            path);
                         if (!startNode->main.compare_exchange_weak(exp, updated)) {
                             return insert(startNode, newNode, level);
                         }
@@ -491,7 +492,8 @@ private:
                 }
             }
         }
-    }
 
+
+    }
 };
 

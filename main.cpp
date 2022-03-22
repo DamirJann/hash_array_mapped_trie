@@ -4,13 +4,12 @@
 
 #include <random>
 #include <pthread.h>
-const char* fmt_thread_log = "LOG[%d] %s\n";
 
 
 int main(){
     // arrange
     Trie<int, int> trie;
-    int thread_count = 20;
+    int thread_count = 5;
     int iteration_count = 100000;
 
     vector<pthread_t> thread(thread_count);
@@ -24,9 +23,8 @@ int main(){
             auto *trie = (Trie<int, int> *) (*static_cast<vector<void *> *>(args))[0];
             int *id = (int *) (*static_cast<vector<void *> *>(args))[1];
             int *iteration_count = (int *) (*static_cast<vector<void *> *>(args))[2];
-
             for (int i = *id * (*iteration_count); i < (*id + 1) * (*iteration_count); i++) {
-                cout << "LOG[" <<  to_string(*id) <<  "]:" << " Inserted "  << i << endl;
+//                cout << "LOG[" <<  to_string(*id) <<  "]:" << " Inserted "  << i << endl;
                 trie->insert(i, i);
             }
 
