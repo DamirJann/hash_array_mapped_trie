@@ -181,13 +181,13 @@ public:
         this->main.store(main, std::memory_order_seq_cst);
     }
 
-    bool swapToCopyWithReplacedChild(Node *newChild, uint8_t path) {
-        CNode<K, V> *copy = getCopy(waitMain());
-        copy->replaceChild(newChild, path);
-        // cas
-        this->main = copy;
-        return true;
-    }
+//    bool swapToCopyWithReplacedChild(Node *newChild, uint8_t path) {
+//        CNode<K, V> *copy = getCopy(waitMain());
+//        copy->replaceChild(newChild, path);
+//        // cas
+//        this->main = copy;
+//        return true;
+//    }
 
     bool swapToCopyWithDeletedKey(K key, uint8_t path) {
         CNode<K, V> *copy = getCopy(waitMain());
@@ -200,24 +200,14 @@ public:
                 return true;
             }
         }
-
         return false;
     }
-
-    CNode<K, V> *waitMain() {
-        CNode<K, V> *res = nullptr;
-        while (res == nullptr) {
-            res = this->main.load();
-        }
-        return res;
-    }
-
 
     atomic<CNode<K, V> *> main;
 };
 
 template<class K, class V>
-bool tryToContract(INode<K, V> *currentNode, INode<K, V> *reducedNode, uint8_t path) {
+bool contractParent(INode<K, V> *currentNode, INode<K, V> *reducedNode, uint8_t path) {
     if (currentNode == nullptr) return false;
 
     switch (reducedNode->waitMain()->getChildCount()) {
@@ -234,7 +224,6 @@ bool tryToContract(INode<K, V> *currentNode, INode<K, V> *reducedNode, uint8_t p
         }
     }
 }
-
 
 struct LookupResult {
     enum LookupResultStatus {
@@ -262,9 +251,8 @@ LookupResult createSuccessfulLookupResult(int value) {
     return {value, LookupResult::Found};
 }
 
-const LookupResult NOT_FOUND{0, LookupResult::NotFound};
-const LookupResult RESTART{0, LookupResult::Failed};
-
+const LookupResult LOOKUP_NOT_FOUND{0, LookupResult::NotFound};
+const LookupResult LOOKUP_RESTART{0, LookupResult::Failed};
 
 struct RemoveResult {
     enum Status {
@@ -279,15 +267,18 @@ struct RemoveResult {
     bool operator==(RemoveResult rightOperand) const {
         if ((this->status == NotFound) && (rightOperand.status == NotFound)) return true;
         if ((this->status == Failed) && (rightOperand.status == Failed)) return true;
-        if ((this->Removed == Failed) && (rightOperand.status == Removed)) return this->value == rightOperand.value;
+        if ((this->status == Failed) && (rightOperand.status == Removed)) return this->value == rightOperand.value;
         return false;
     }
 
     bool operator!=(RemoveResult rightOperand) const {
         return !(*this == rightOperand);
     }
-
 };
+
+const RemoveResult REMOVE_NOT_FOUND{0, RemoveResult::NotFound};
+const RemoveResult REMOVE_RESTART{0, RemoveResult::Failed};
+
 
 template<class K, class V>
 CNode<K, V> *getCopy(CNode<K, V> *node) {
@@ -295,26 +286,39 @@ CNode<K, V> *getCopy(CNode<K, V> *node) {
 }
 
 template<class K, class V>
-CNode<K, V> *transformToWithReplacedPair(CNode<K, V> *copy, SNode<K, V> *subNode, SNode<K, V> *newNode, uint8_t path) {
+void transformToWithReplacedPair(CNode<K, V> *copy, SNode<K, V> *subNode, SNode<K, V> *newNode, uint8_t path) {
     copy->replaceChild(leftMerge(newNode, subNode), path);
     return copy;
 }
 
 template<class K, class V>
-CNode<K, V> *transformToWithMergedChild(CNode<K, V> *copy, SNode<K, V> *subNode, SNode<K, V> *newNode, uint8_t path) {
+void transformToWithMergedChild(CNode<K, V> *copy, SNode<K, V> *subNode, SNode<K, V> *newNode, uint8_t path) {
     copy->replaceChild(leftMerge(newNode, subNode), path);
     return copy;
 }
 
 template<class K, class V>
-CNode<K, V> *
-transformToWithDownChild(CNode<K, V> *c1, SNode<K, V> *child2, SNode<K, V> *child3, uint8_t level, uint8_t path) {
+void transformToWithDownChild(CNode<K, V> *c1, SNode<K, V> *child2, SNode<K, V> *child3, uint8_t level, uint8_t path) {
     auto *c2 = new CNode<K, V>();
     c2->insertChild(child2, extractHashPartByLevel(child2->getHash(), level + 1));
     c2->insertChild(child3, extractHashPartByLevel(child3->getHash(), level + 1));
     auto *i2 = new INode<K, V>(c2);
     c1->replaceChild(i2, path);
     return c1;
+}
+
+template<class K, class V>
+bool transformToWithDeletedKey(CNode<K, V> *copy, Node *subNode, K key, uint8_t path) {
+    SNode<K, V> *subNode = static_cast<SNode<K, V> *>(copy->getSubNode(path));
+
+    for (auto &p: subNode->pair) {
+        if (p.key == key) {
+            subNode->pair.erase(p);
+            this->main = copy;
+            return true;
+        }
+    }
+    return false;
 }
 
 template<class K, class V>
@@ -334,26 +338,26 @@ public:
     LookupResult lookup(K k) {
         while (true) {
             if (root->main.load() == nullptr) {
-                return NOT_FOUND;
+                return LOOKUP_NOT_FOUND;
             } else {
-                LookupResult r = lookup(root, k, generateSimpleHash(k), 0);
-                if (r != RESTART) {
-                    return r;
+                LookupResult res = lookup(root, k, generateSimpleHash(k), 0);
+                if (res != LOOKUP_RESTART) {
+                    return res;
                 }
             }
         }
     }
 
-
-    bool remove(K key) {
-        mx.lock();
-
-        if (root == nullptr) {
-            root = new INode<K, V>(new CNode<K, V>());
+    RemoveResult remove(K key) {
+        while (true) {
+            if (root->main.load() == nullptr) {
+                return REMOVE_NOT_FOUND;
+            }
+            RemoveResult res = this->remove(root, nullptr, key, generateSimpleHash(key), 0);
+            if (res != REMOVE_RESTART) {
+                return res;
+            }
         }
-        bool res = this->remove(nullptr, root, key, generateSimpleHash(key), 0);
-        mx.unlock();
-        return res;
     }
 
 
@@ -381,48 +385,40 @@ private:
     LookupResult lookup(INode<K, V> *startNode, K key, uint64_t hash, uint8_t level) {
         Node *nextNode = startNode->main.load()->getSubNode(extractHashPartByLevel(hash, level));
         if (nextNode == nullptr) {
-            return NOT_FOUND;
+            return LOOKUP_NOT_FOUND;
         } else if (nextNode->type == SNODE) {
             if (static_cast<SNode<K, V> *>(nextNode)->contains(key)) {
                 return createSuccessfulLookupResult(static_cast<SNode<K, V> *>(nextNode)->getValue(key));
             }
-            return NOT_FOUND;
+            return LOOKUP_NOT_FOUND;
         } else if (nextNode->type == INODE) {
             return lookup(static_cast<INode<K, V> *>(nextNode), key, hash, level + 1);
         }
     }
 
-    bool remove(INode<K, V> *iParent, INode<K, V> *currentNode, K key, uint64_t hash, uint8_t level) {
-        Node *subNode = currentNode->waitMain()->getSubNode(extractHashPartByLevel(hash, level));
+    RemoveResult remove(INode<K, V> *currentNode, INode<K, V> *parent, K key, uint64_t hash, uint8_t level) {
+        CNode<K, V> *old = currentNode->main.load();
+        CNode<K, V> *updated = getCopy(old);
+        Node *subNode = currentNode->main.load()->getSubNode(extractHashPartByLevel(hash, level));
 
-        if (subNode == nullptr) return false;
-
-        switch (subNode->type) {
-            case SNODE: {
-                if (!static_cast<SNode<K, V> *>(subNode)->contains(key)) {
-                    return false;
-                }
-                currentNode->swapToCopyWithDeletedKey(key, extractHashPartByLevel(hash, level));
-                break;
+        if (subNode == nullptr) {
+            return REMOVE_NOT_FOUND;
+        } else if (subNode->type == SNODE) {
+            if (!static_cast<SNode<K, V> *>(subNode)->contains(key)) {
+                return REMOVE_NOT_FOUND;
+            } else {
+                transformToWithDeletedKey(updated,  subNode, key,extractHashPartByLevel(hash, level));
             }
-            case INODE: {
-                if (!this->remove(currentNode, static_cast<INode<K, V> *>(subNode), key, hash, level + 1)) {
-                    return false;
-                }
-                break;
-            }
-            default: {
-                static_assert(true, "Trie is build wrong");
-                return false;
-            }
+        } else if (subNode->type == INODE) {
+            return this->remove(currentNode, static_cast<INode<K, V> *>(subNode), key, hash, level + 1));
         }
 
-        tryToContract(iParent, currentNode, extractHashPartByLevel(hash, level - 1));
+        contractParent(parent, currentNode, extractHashPartByLevel(hash, level - 1));
         return true;
     }
 
-    bool insert(INode<K, V> *startNode, SNode<K, V> *newNode, uint8_t level) {
-        CNode<K, V> *old = startNode->main.load();
+    bool insert(INode<K, V> *currentNode, SNode<K, V> *newNode, uint8_t level) {
+        CNode<K, V> *old = currentNode->main.load();
         CNode<K, V> *updated = getCopy(old);
 
         int path = extractHashPartByLevel(newNode->getHash(), level);
@@ -430,18 +426,18 @@ private:
 
         if (subNode == nullptr) {
             updated->insertChild(newNode, path);
-            return startNode->main.compare_exchange_strong(old, updated);
+            return currentNode->main.compare_exchange_strong(old, updated);
         } else if (subNode->type == SNODE) {
             auto *sSubNode = static_cast<SNode<K, V> *>(subNode);
             if (sSubNode->contains(newNode)) {
-                updated = transformToWithReplacedPair(updated, sSubNode, newNode, path);
-                return startNode->main.compare_exchange_strong(old, updated);
+                transformToWithReplacedPair(updated, sSubNode, newNode, path);
+                return currentNode->main.compare_exchange_strong(old, updated);
             } else if (level == MAX_LEVEL_COUNT) {
-                updated = transformToWithMergedChild(updated, sSubNode, newNode, path);
-                return startNode->main.compare_exchange_strong(old, updated);
+                transformToWithMergedChild(updated, sSubNode, newNode, path);
+                return currentNode->main.compare_exchange_strong(old, updated);
             } else {
-                updated = transformToWithDownChild<K, V>(updated, newNode, sSubNode, level, path);
-                return startNode->main.compare_exchange_strong(old, updated);
+                transformToWithDownChild<K, V>(updated, newNode, sSubNode, level, path);
+                return currentNode->main.compare_exchange_strong(old, updated);
             }
         } else if (subNode->type == INODE) {
             return insert(static_cast<INode<K, V> *>(subNode), newNode, level + 1);
