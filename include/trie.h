@@ -358,9 +358,7 @@ public:
         }
     }
 
-
 private:
-
     LookupResult lookup(INode<K, V> *startNode, K key, uint64_t hash, uint8_t level) {
         Node *nextNode = startNode->main.load()->getSubNode(extractHashPartByLevel(hash, level));
         if (nextNode == nullptr) {
@@ -395,10 +393,11 @@ private:
                        ? createSuccessfulRemoveResult(deletedValue) : REMOVE_RESTART;
             }
         } else if (subNode->type == INODE) {
-            return this->remove(static_cast<INode<K, V> *>(subNode), static_cast<INode<K, V> *>(subNode), key, hash, level + 1);
+            return this->remove(static_cast<INode<K, V> *>(subNode), static_cast<INode<K, V> *>(subNode), key, hash,
+                                level + 1);
         }
 
-        contractParent(parent, currentNode, extractHashPartByLevel(hash, level - 1));
+//        contractParent(parent, currentNode, extractHashPartByLevel(hash, level - 1));
         return REMOVE_NOT_FOUND;
     }
 

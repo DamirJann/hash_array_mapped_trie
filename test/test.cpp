@@ -352,7 +352,7 @@ TEST(TRIE, HAPPY_FLOW__INSERTING_BY_MANY_THREAD) {
 
     // assert
     for (int i = 0; i < iteration_count * thread_count; i++) {
-        ASSERT_EQ(trie.lookup(i),  createSuccessfulLookupResult(i));
+        ASSERT_EQ(trie.lookup(i), createSuccessfulLookupResult(i));
         ASSERT_EQ(trie.lookup(i).value, i);
     }
 }
@@ -396,7 +396,7 @@ TEST(TRIE, HAPPY_FLOW__LOOKING_UP_KEYS_BY_MANY_THREAD) {
         ASSERT_EQ(trie.lookup(i), LOOKUP_NOT_FOUND);
     }
     for (int i = iteration_count; i < iteration_count * 10; i++) {
-        ASSERT_EQ(trie.lookup(i),  createSuccessfulLookupResult(i));
+        ASSERT_EQ(trie.lookup(i), createSuccessfulLookupResult(i));
     }
 }
 
@@ -416,12 +416,13 @@ TEST(TRIE, HAPPY_FLOW__INSERTING_AND_REMOVING_ONE_ELEMENT_BY_MANY_THREAD) {
     for (int i = 0; i < thread.size(); i++) {
         pthread_create(&thread[i], nullptr, [](void *args) -> void * {
             auto *trie = (Trie<int, int> *) (*static_cast<vector<void *> *>(args))[0];
+            int *id = (int *) (*static_cast<vector<void *> *>(args))[1];
             int *iteration_count = (int *) (*static_cast<vector<void *> *>(args))[2];
 
-            for (int i = 0; i < *iteration_count; i++) {
+            for (int i = *id * (*iteration_count); i < (*id + 1) * (*iteration_count); i++) {
                 trie->insert(i, i);
-                assert(trie->lookup(i) ==  createSuccessfulLookupResult(i));
-                trie->remove( i);
+                assert(trie->lookup(i) == createSuccessfulLookupResult(i));
+                trie->remove(i);
                 assert(trie->lookup(i) == LOOKUP_NOT_FOUND);
             }
 
@@ -460,7 +461,7 @@ TEST(TRIE, HAPPY_FLOW__INSERTING_AND_REMOVING_RANDOM_KEY_BY_MANY_THREAD) {
             for (int i = 0; i < *iteration_count; i++) {
                 int k = rand() % 100;
                 trie->insert(k, k);
-                trie->remove( k);
+                trie->remove(k);
             }
             pthread_exit(nullptr);
         }, &attr[i]);
@@ -513,8 +514,8 @@ TEST(TRIE, HAPPY_FLOW__KEY_INSERTING_AND_REMOVING_SEQUENTALLY_BY_MANY_THREAD) {
 TEST(TRIE, HAPPY_FLOW__KEY_RANDOM_ACTIONS_BY_MANY_THREAD) {
     // arrange & act
     Trie<int, int> trie;
-    int thread_count = rand() % 15 + 2;
-    int iteration_count = rand() % 1000000;
+    int thread_count = rand() % 8 + 2;
+    int iteration_count = rand() % 50000;
 
     vector<pthread_t> thread(thread_count);
     vector<vector<void *>> attr(thread_count);
