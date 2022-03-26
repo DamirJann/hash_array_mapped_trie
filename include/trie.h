@@ -102,7 +102,7 @@ public:
 
 public:
     uint64_t hash{};
-    set <Pair<K, V>> pair;
+    set<Pair<K, V>> pair;
 };
 
 template<class K, class V>
@@ -189,14 +189,6 @@ public:
         return true;
     }
 
-    bool swapToCopyWithInsertedChild(Node *child, uint8_t path) {
-        CNode<K, V> *copy = getCopy(waitMain());
-        copy->insertChild(child, path);
-        // cas
-        this->main = copy;
-        return true;
-    }
-
     bool swapToCopyWithDeletedKey(K key, uint8_t path) {
         CNode<K, V> *copy = getCopy(waitMain());
         SNode<K, V> *subNode = static_cast<SNode<K, V> *>(copy->getSubNode(path));
@@ -211,22 +203,6 @@ public:
 
         return false;
     }
-
-    bool swapToCopyWithDeletedChild(uint8_t path) {
-        CNode<K, V> *copy = getCopy(this->main);
-        copy->deleteChild(path);
-        // cas
-        this->main = copy;
-        return true;
-    }
-
-//    bool swapToCopyWithDownChild(Node *child, uint8_t level) {
-//        auto *s1 = reinterpret_cast<SNode<K, V> *>(child);
-//        CNode<K, V> *c1 = buildCNodeWithSNodeChild(s1, extractHashPartByLevel(s1->getHash(), level + 1));
-//        auto *i1 = new INode(c1);
-//        this->swapToCopyWithReplacedChild(i1, extractHashPartByLevel(s1->getHash(), level));
-//        return false;
-//    }
 
     CNode<K, V> *waitMain() {
         CNode<K, V> *res = nullptr;
@@ -259,23 +235,36 @@ bool tryToContract(INode<K, V> *currentNode, INode<K, V> *reducedNode, uint8_t p
     }
 }
 
+enum LookupResultState {
+    NotFound,
+    Found,
+    Failed
+};
+
 
 struct LookupResult {
     int value;
-    bool isFound;
+    LookupResultState state;
 };
 
 bool operator==(const LookupResult a, const LookupResult b) {
-    if (!a.isFound && !b.isFound) return true;
-    if (!a.isFound || !b.isFound) return false;
-    return a.value == b.value;
+    if ((a.state == NotFound) && (b.state == NotFound)) return true;
+    if ((a.state == Failed) && (b.state == Failed)) return true;
+    if ((a.state == Found) && (b.state == Found)) return a.value == b.value;
+    return false;
 }
 
-LookupResult createLookupResult(int value) {
-    return {value, true};
+
+bool operator!=(const LookupResult a, const LookupResult b) {
+    return !(a == b);
 }
 
-const LookupResult NOT_FOUND{0, false};
+LookupResult createSuccessfulLookupResult(int value) {
+    return {value, Found};
+}
+
+const LookupResult NOT_FOUND{0, NotFound};
+const LookupResult RESTART{0, Failed};
 
 
 template<class K, class V>
@@ -315,8 +304,6 @@ buildCopyWithDownChild(CNode<K, V> *c1, SNode<K, V> *child2, SNode<K, V> *child3
     c2->insertChild(child3, extractHashPartByLevel(child3->getHash(), level + 1));
     auto *i2 = new INode<K, V>(c2);
     c1->replaceChild(i2, path);
-
-
     return c1;
 }
 
@@ -344,16 +331,18 @@ public:
     }
 
     LookupResult lookup(K k) {
-        mx.lock();
-
-//        if (root == nullptr) {
-//            root = new INode<K, V>(atomic<CNode<K, V>>());
-//        }
-
-        LookupResult res = lookup(root, k, generateSimpleHash(k), 0);
-        mx.unlock();
-        return res;
+        while (true) {
+            if (root->main.load() == nullptr) {
+                return NOT_FOUND;
+            } else {
+                LookupResult r = lookup(root, k, generateSimpleHash(k), 0);
+                if (r != RESTART) {
+                    return r;
+                }
+            }
+        }
     }
+
 
     bool remove(K key) {
         mx.lock();
@@ -369,12 +358,13 @@ public:
 
     bool insert(K key, V value) {
         while (true) {
-            if (root->main.load() == nullptr) {
-                // root -> i -> s
-                auto *i = new CNode<K, V>();
+            CNode<K, V> *old = root->main.load();
+            if (old == nullptr) {
+                // root -> c -> s
+                auto *c = new CNode<K, V>();
                 auto *s = new SNode<K, V>(key, value);
-                i->insertChild(s, extractHashPartByLevel(s->getHash(), 0));
-                if (root->main.compare_exchange_weak(CNODE_NULL, i)) {
+                c->insertChild(s, extractHashPartByLevel(s->getHash(), 0));
+                if (root->main.compare_exchange_strong(old, c)) {
                     return true;
                 }
             } else {
@@ -383,32 +373,21 @@ public:
                 }
             }
         }
-
     }
 
 
 private:
-    CNode<K, V> *CNODE_NULL = nullptr;
-
     LookupResult lookup(INode<K, V> *startNode, K key, uint64_t hash, uint8_t level) {
-        Node *nextNode = startNode->waitMain()->getSubNode(extractHashPartByLevel(hash, level));
-
-        if (nextNode == nullptr) return NOT_FOUND;
-
-        switch (nextNode->type) {
-            case SNODE: {
-                if (static_cast<SNode<K, V> *>(nextNode)->contains(key)) {
-                    return createLookupResult(static_cast<SNode<K, V> *>(nextNode)->getValue(key));
-                }
-                return NOT_FOUND;
+        Node *nextNode = startNode->main.load()->getSubNode(extractHashPartByLevel(hash, level));
+        if (nextNode == nullptr) {
+            return NOT_FOUND;
+        } else if (nextNode->type == SNODE) {
+            if (static_cast<SNode<K, V> *>(nextNode)->contains(key)) {
+                return createSuccessfulLookupResult(static_cast<SNode<K, V> *>(nextNode)->getValue(key));
             }
-            case INODE: {
-                return lookup(static_cast<INode<K, V> *>(nextNode), key, hash, level + 1);
-            }
-            default: {
-                static_assert(true, "Trie is build wrong");
-                return NOT_FOUND;
-            }
+            return NOT_FOUND;
+        } else if (nextNode->type == INODE) {
+            return lookup(static_cast<INode<K, V> *>(nextNode), key, hash, level + 1);
         }
     }
 
@@ -442,58 +421,42 @@ private:
     }
 
     bool insert(INode<K, V> *startNode, SNode<K, V> *newNode, uint8_t level) {
-
-
-        CNode<K, V> *exp = startNode->waitMain();
-        int path = extractHashPartByLevel(newNode->getHash(), level);
+        CNode<K, V> *exp = startNode->main.load();
+        // TODO don't copy if subNode is INODE
         CNode<K, V> *orgCopy = getCopy(exp);
-        Node *subNode = orgCopy->getSubNode(path);
 
+        int path = extractHashPartByLevel(newNode->getHash(), level);
+        Node *subNode = orgCopy->getSubNode(path);
 
         if (subNode == nullptr) {
             CNode<K, V> *updated = orgCopy;
             updated->insertChild(newNode, path);
-            if (!startNode->main.compare_exchange_weak(exp, updated)) {
+            if (startNode->main.compare_exchange_strong(exp, updated)) {
+                return true;
+            }
+            return false;
+        } else if (subNode->type == SNODE) {
+            auto *sSubNode = static_cast<SNode<K, V> *>(subNode);
+            if (sSubNode->contains(newNode)) {
+                CNode<K, V> *updated = buildCopyWithReplacedPair(orgCopy, sSubNode, newNode, path);
+                return startNode->main.compare_exchange_strong(exp, updated);
+            } else if (level == 12) {
+                CNode<K, V> *updated = buildCopyWithMergedChild(orgCopy, sSubNode, newNode, path);
+                return startNode->main.compare_exchange_strong(exp, updated);
+            } else {
+                CNode<K, V> *updated = buildCopyWithDownChild<K, V>(orgCopy, newNode, sSubNode, level, path);
+                startNode->main.compare_exchange_strong(exp, updated);
                 return false;
             }
+        } else if (subNode->type == INODE) {
+            auto *next = static_cast<INode<K, V> *>(startNode->waitMain()->getSubNode(path));
+            return insert(next, newNode, level + 1);
         } else {
-            switch (subNode->type) {
-                case SNODE: {
-                    auto *sSubNode = static_cast<SNode<K, V> *>(subNode);
-                    if (sSubNode->contains(newNode)) {
-                        CNode<K, V> *updated = buildCopyWithReplacedPair(orgCopy, sSubNode,
-                                                                         newNode, path);
-                        if (!startNode->main.compare_exchange_weak(exp, updated)) {
-                            return false;
-                        }
-                        return true;
-                    } else if (level == 12) {
-                        CNode<K, V> *updated = buildCopyWithMergedChild(orgCopy, sSubNode,
-                                                                        newNode, path);
-                        if (!startNode->main.compare_exchange_weak(exp, updated)) {
-                            return false;
-                        }
-                    } else {
-                        CNode<K, V> *updated = buildCopyWithDownChild<K, V>(orgCopy, newNode, sSubNode, level,
-                                                                            path);
-                        if (!startNode->main.compare_exchange_weak(exp, updated)) {
-                            return insert(startNode, newNode, level);
-                        }
-                        return true;
-                    }
-                }
-                case INODE: {
-                    auto *next = static_cast<INode<K, V> *>(startNode->waitMain()->getSubNode(path));
-                    return insert(next, newNode, level + 1);
-                }
-                default: {
-                    assert(false);
-                    return false;
-                }
-            }
+            assert(false);
+            return false;
         }
-
-
     }
+
+
 };
 

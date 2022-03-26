@@ -27,7 +27,6 @@ int main(){
 //                cout << "LOG[" <<  to_string(*id) <<  "]:" << " Inserted "  << i << endl;
                 trie->insert(i, i);
             }
-
             pthread_exit(nullptr);
         }, &attr[i]);
 
