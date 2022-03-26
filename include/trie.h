@@ -421,9 +421,9 @@ private:
     }
 
     bool insert(INode<K, V> *startNode, SNode<K, V> *newNode, uint8_t level) {
-        CNode<K, V> *exp = startNode->main.load();
+        CNode<K, V> *old = startNode->main.load();
         // TODO don't copy if subNode is INODE
-        CNode<K, V> *orgCopy = getCopy(exp);
+        CNode<K, V> *orgCopy = getCopy(old);
 
         int path = extractHashPartByLevel(newNode->getHash(), level);
         Node *subNode = orgCopy->getSubNode(path);
@@ -431,7 +431,7 @@ private:
         if (subNode == nullptr) {
             CNode<K, V> *updated = orgCopy;
             updated->insertChild(newNode, path);
-            if (startNode->main.compare_exchange_strong(exp, updated)) {
+            if (startNode->main.compare_exchange_strong(old, updated)) {
                 return true;
             }
             return false;
@@ -439,17 +439,16 @@ private:
             auto *sSubNode = static_cast<SNode<K, V> *>(subNode);
             if (sSubNode->contains(newNode)) {
                 CNode<K, V> *updated = buildCopyWithReplacedPair(orgCopy, sSubNode, newNode, path);
-                return startNode->main.compare_exchange_strong(exp, updated);
+                return startNode->main.compare_exchange_strong(old, updated);
             } else if (level == 12) {
                 CNode<K, V> *updated = buildCopyWithMergedChild(orgCopy, sSubNode, newNode, path);
-                return startNode->main.compare_exchange_strong(exp, updated);
+                return startNode->main.compare_exchange_strong(old, updated);
             } else {
                 CNode<K, V> *updated = buildCopyWithDownChild<K, V>(orgCopy, newNode, sSubNode, level, path);
-                startNode->main.compare_exchange_strong(exp, updated);
-                return false;
+                return startNode->main.compare_exchange_strong(old, updated);
             }
         } else if (subNode->type == INODE) {
-            auto *next = static_cast<INode<K, V> *>(startNode->waitMain()->getSubNode(path));
+            auto *next = static_cast<INode<K, V> *>(orgCopy->getSubNode(path));
             return insert(next, newNode, level + 1);
         } else {
             assert(false);
