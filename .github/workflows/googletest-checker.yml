@@ -4,6 +4,9 @@ on:
     paths-ignore:
       - 'resources/**'
       - 'README.md'
+  schedule:
+    - cron: '5 * * * *'
+
 
 jobs:
   test-project:
