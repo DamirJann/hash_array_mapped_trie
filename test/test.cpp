@@ -266,7 +266,7 @@ TEST(TRIE, HAPPY_FLOW__INSERTING_AND_REMOVING_KEYS_BY_ONE_THREAD) {
     }
 
     for (int i = 0; i < count; i++) {
-        ASSERT_EQ(trie.lookup(i).isFound, true);
+        ASSERT_EQ(trie.lookup(i).state, Found);
         ASSERT_EQ(trie.lookup(i).value, i);
     }
 
@@ -315,7 +315,7 @@ TEST(TRIE, HAPPY_FLOW__INSERTING_AND_LOOKING_UP_BY_MANY_THREAD) {
     // assert
     for (int i = 0; i < iteration_count * thread_count; i++) {
 //        cout << i << endl;
-        ASSERT_EQ(trie.lookup(i).isFound, true);
+        ASSERT_EQ(trie.lookup(i).state, Found);
         ASSERT_EQ(trie.lookup(i).value, i);
     }
 }
@@ -325,7 +325,7 @@ TEST(TRIE, HAPPY_FLOW__INSERTING_BY_MANY_THREAD) {
     // arrange
     Trie<int, int> trie;
     int thread_count = 10;
-    int iteration_count = 100000;
+    int iteration_count = 10000;
 
     vector<pthread_t> thread(thread_count);
     vector<vector<void *>> attr(thread_count);
@@ -354,6 +354,7 @@ TEST(TRIE, HAPPY_FLOW__INSERTING_BY_MANY_THREAD) {
 
     // assert
     for (int i = 0; i < iteration_count * thread_count; i++) {
+        ASSERT_EQ(trie.lookup(i).state, Found);
         ASSERT_EQ(trie.lookup(i).value, i);
     }
 }
@@ -380,7 +381,7 @@ TEST(TRIE, HAPPY_FLOW__LOOKING_UP_KEYS_BY_MANY_THREAD) {
             int *iteration_count = (int *) (*static_cast<vector<void *> *>(args))[1];
 
             for (int i = 0; i < *iteration_count; i++) {
-                assert(trie->lookup(i).isFound == false);
+                assert(trie->lookup(i) == NOT_FOUND);
             }
 
             pthread_exit(nullptr);
@@ -397,7 +398,7 @@ TEST(TRIE, HAPPY_FLOW__LOOKING_UP_KEYS_BY_MANY_THREAD) {
         ASSERT_EQ(trie.lookup(i), NOT_FOUND);
     }
     for (int i = iteration_count; i < iteration_count * 10; i++) {
-        ASSERT_EQ(trie.lookup(i).isFound, true);
+        ASSERT_EQ(trie.lookup(i).state, Found);
     }
 }
 
@@ -427,7 +428,7 @@ TEST(TRIE, HAPPY_FLOW__LOOKING_UP_KEYS_AFTER_CLEARED_TRIE_BY_MANY_THREAD) {
             int *iteration_count = (int *) (*static_cast<vector<void *> *>(args))[1];
 
             for (int i = 0; i < *iteration_count; i++) {
-                assert(trie->lookup(i).isFound == false);
+                assert(trie->lookup(i) == NOT_FOUND);
             }
 
             pthread_exit(nullptr);
@@ -620,7 +621,7 @@ TEST(TRIE, HAPPY_FLOW___INSERTING_THE_SAME_KEY_MANY_TIMES_BY_MANY_THREAD) {
     }
 
     // assert
-    ASSERT_EQ(trie.lookup(0).isFound, true);
+    ASSERT_EQ(trie.lookup(0).state, Found);
     ASSERT_LT(trie.lookup(0).value, thread.size());
     ASSERT_GE(trie.lookup(0).value, 0);
 
