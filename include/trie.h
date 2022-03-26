@@ -235,54 +235,64 @@ bool tryToContract(INode<K, V> *currentNode, INode<K, V> *reducedNode, uint8_t p
     }
 }
 
-enum LookupResultState {
-    NotFound,
-    Found,
-    Failed
-};
-
 
 struct LookupResult {
+    enum LookupResultStatus {
+        NotFound,
+        Found,
+        Failed
+    };
+
     int value;
-    LookupResultState state;
+    LookupResultStatus status;
+
+    bool operator==(LookupResult b) const {
+        if ((this->status == NotFound) && (b.status == NotFound)) return true;
+        if ((this->status == Failed) && (b.status == Failed)) return true;
+        if ((this->status == Found) && (b.status == Found)) return this->value == b.value;
+        return false;
+    }
+
+    bool operator!=(LookupResult b) const {
+        return !(*this == b);
+    }
 };
 
-bool operator==(const LookupResult a, const LookupResult b) {
-    if ((a.state == NotFound) && (b.state == NotFound)) return true;
-    if ((a.state == Failed) && (b.state == Failed)) return true;
-    if ((a.state == Found) && (b.state == Found)) return a.value == b.value;
-    return false;
-}
-
-
-bool operator!=(const LookupResult a, const LookupResult b) {
-    return !(a == b);
-}
-
 LookupResult createSuccessfulLookupResult(int value) {
-    return {value, Found};
+    return {value, LookupResult::Found};
 }
 
-const LookupResult NOT_FOUND{0, NotFound};
-const LookupResult RESTART{0, Failed};
+const LookupResult NOT_FOUND{0, LookupResult::NotFound};
+const LookupResult RESTART{0, LookupResult::Failed};
 
+
+struct RemoveResult {
+    enum Status {
+        Removed,
+        Failed,
+        NotFound,
+    };
+
+    int value;
+    Status status;
+
+    bool operator==(RemoveResult rightOperand) const {
+        if ((this->status == NotFound) && (rightOperand.status == NotFound)) return true;
+        if ((this->status == Failed) && (rightOperand.status == Failed)) return true;
+        if ((this->Removed == Failed) && (rightOperand.status == Removed)) return this->value == rightOperand.value;
+        return false;
+    }
+
+    bool operator!=(RemoveResult rightOperand) const {
+        return !(*this == rightOperand);
+    }
+
+};
 
 template<class K, class V>
 CNode<K, V> *getCopy(CNode<K, V> *node) {
     return new CNode<K, V>(*node);
 }
-
-
-// i1 -> c1 -> s1, ...
-// add s2
-// c1' -> s1, ...
-// c1' -> (new s1 + s2), ...
-//template<class K, class V>
-//CNode<K, V> *transformToWithMergedChild(CNode<K, V> *org, SNode<K, V> *subNode, SNode<K, V> *newNode, uint8_t path) {
-//    CNode<K, V> *copy = getCopy(org);
-//    copy->replaceChild(leftMerge(subNode, newNode), path);
-//    return copy;
-//}
 
 template<class K, class V>
 CNode<K, V> *transformToWithReplacedPair(CNode<K, V> *copy, SNode<K, V> *subNode, SNode<K, V> *newNode, uint8_t path) {
@@ -306,15 +316,6 @@ transformToWithDownChild(CNode<K, V> *c1, SNode<K, V> *child2, SNode<K, V> *chil
     c1->replaceChild(i2, path);
     return c1;
 }
-
-
-template<class K, class V>
-CNode<K, V> *buildCNodeWithSNodeChild(SNode<K, V> *child, uint8_t path) {
-    CNode<K, V> *parent = new CNode<K, V>();
-    parent->insertChild(child, path);
-    return parent;
-}
-
 
 template<class K, class V>
 class Trie {
@@ -449,7 +450,5 @@ private:
             return false;
         }
     }
-
-
 };
 
