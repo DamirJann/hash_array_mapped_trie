@@ -15,3 +15,9 @@ jobs:
       - uses: actions/checkout@v2
       - name: Test project with googletest.
         uses: damirjann/hash_array_mapped_trie@main
+
+      - name: Publish Unit Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v1
+        if: always()
+        with:
+          files: "test-results/**/*.xml"
