@@ -2,11 +2,10 @@ name: googletest-project
 on:
   schedule:
     - cron: '*/5 * * * *'
-
-#  push:
-#    paths-ignore:
-#      - 'resources/**'
-#      - 'README.md'
+  push:
+    paths-ignore:
+      - 'resources/**'
+      - 'README.md'
 
 jobs:
   test-project:
