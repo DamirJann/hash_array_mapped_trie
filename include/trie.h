@@ -278,27 +278,27 @@ CNode<K, V> *getCopy(CNode<K, V> *node) {
 // c1' -> s1, ...
 // c1' -> (new s1 + s2), ...
 //template<class K, class V>
-//CNode<K, V> *buildCopyWithMergedChild(CNode<K, V> *org, SNode<K, V> *subNode, SNode<K, V> *newNode, uint8_t path) {
+//CNode<K, V> *transformToWithMergedChild(CNode<K, V> *org, SNode<K, V> *subNode, SNode<K, V> *newNode, uint8_t path) {
 //    CNode<K, V> *copy = getCopy(org);
 //    copy->replaceChild(leftMerge(subNode, newNode), path);
 //    return copy;
 //}
 
 template<class K, class V>
-CNode<K, V> *buildCopyWithReplacedPair(CNode<K, V> *copy, SNode<K, V> *subNode, SNode<K, V> *newNode, uint8_t path) {
+CNode<K, V> *transformToWithReplacedPair(CNode<K, V> *copy, SNode<K, V> *subNode, SNode<K, V> *newNode, uint8_t path) {
     copy->replaceChild(leftMerge(newNode, subNode), path);
     return copy;
 }
 
 template<class K, class V>
-CNode<K, V> *buildCopyWithMergedChild(CNode<K, V> *copy, SNode<K, V> *subNode, SNode<K, V> *newNode, uint8_t path) {
+CNode<K, V> *transformToWithMergedChild(CNode<K, V> *copy, SNode<K, V> *subNode, SNode<K, V> *newNode, uint8_t path) {
     copy->replaceChild(leftMerge(newNode, subNode), path);
     return copy;
 }
 
 template<class K, class V>
 CNode<K, V> *
-buildCopyWithDownChild(CNode<K, V> *c1, SNode<K, V> *child2, SNode<K, V> *child3, uint8_t level, uint8_t path) {
+transformToWithDownChild(CNode<K, V> *c1, SNode<K, V> *child2, SNode<K, V> *child3, uint8_t level, uint8_t path) {
     auto *c2 = new CNode<K, V>();
     c2->insertChild(child2, extractHashPartByLevel(child2->getHash(), level + 1));
     c2->insertChild(child3, extractHashPartByLevel(child3->getHash(), level + 1));
@@ -422,34 +422,28 @@ private:
 
     bool insert(INode<K, V> *startNode, SNode<K, V> *newNode, uint8_t level) {
         CNode<K, V> *old = startNode->main.load();
-        // TODO don't copy if subNode is INODE
-        CNode<K, V> *orgCopy = getCopy(old);
+        CNode<K, V> *updated = getCopy(old);
 
         int path = extractHashPartByLevel(newNode->getHash(), level);
-        Node *subNode = orgCopy->getSubNode(path);
+        Node *subNode = updated->getSubNode(path);
 
         if (subNode == nullptr) {
-            CNode<K, V> *updated = orgCopy;
             updated->insertChild(newNode, path);
-            if (startNode->main.compare_exchange_strong(old, updated)) {
-                return true;
-            }
-            return false;
+            return startNode->main.compare_exchange_strong(old, updated);
         } else if (subNode->type == SNODE) {
             auto *sSubNode = static_cast<SNode<K, V> *>(subNode);
             if (sSubNode->contains(newNode)) {
-                CNode<K, V> *updated = buildCopyWithReplacedPair(orgCopy, sSubNode, newNode, path);
+                updated = transformToWithReplacedPair(updated, sSubNode, newNode, path);
                 return startNode->main.compare_exchange_strong(old, updated);
-            } else if (level == 12) {
-                CNode<K, V> *updated = buildCopyWithMergedChild(orgCopy, sSubNode, newNode, path);
+            } else if (level == MAX_LEVEL_COUNT) {
+                updated = transformToWithMergedChild(updated, sSubNode, newNode, path);
                 return startNode->main.compare_exchange_strong(old, updated);
             } else {
-                CNode<K, V> *updated = buildCopyWithDownChild<K, V>(orgCopy, newNode, sSubNode, level, path);
+                updated = transformToWithDownChild<K, V>(updated, newNode, sSubNode, level, path);
                 return startNode->main.compare_exchange_strong(old, updated);
             }
         } else if (subNode->type == INODE) {
-            auto *next = static_cast<INode<K, V> *>(orgCopy->getSubNode(path));
-            return insert(next, newNode, level + 1);
+            return insert(static_cast<INode<K, V> *>(subNode), newNode, level + 1);
         } else {
             assert(false);
             return false;
