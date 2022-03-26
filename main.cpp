@@ -8,37 +8,45 @@
 
 int main(){
     // arrange
-    Trie<int, int> trie;
-    int thread_count = 5;
-    int iteration_count = 100000;
+//    Trie<int, int> trie;
+//    int thread_count = 5;
+//    int iteration_count = 100000;
+//
+//    vector<pthread_t> thread(thread_count);
+//    vector<vector<void *>> attr(thread_count);
+//    for (int i = 0; i < attr.size(); i++) {
+//        attr[i] = {&trie, new int(i), new int(iteration_count)};
+//    }
+//
+//    for (int i = 0; i < thread.size(); i++) {
+//        pthread_create(&thread[i], nullptr, [](void *args) -> void * {
+//            auto *trie = (Trie<int, int> *) (*static_cast<vector<void *> *>(args))[0];
+//            int *id = (int *) (*static_cast<vector<void *> *>(args))[1];
+//            int *iteration_count = (int *) (*static_cast<vector<void *> *>(args))[2];
+//            for (int i = *id * (*iteration_count); i < (*id + 1) * (*iteration_count); i++) {
+////                cout << "LOG[" <<  to_string(*id) <<  "]:" << " Inserted "  << i << endl;
+//                trie->insert(i, i);
+//            }
+//            pthread_exit(nullptr);
+//        }, &attr[i]);
+//
+//    }
+//
+//    for (unsigned long i: thread) {
+//        pthread_join(i, nullptr);
+//    }
 
-    vector<pthread_t> thread(thread_count);
-    vector<vector<void *>> attr(thread_count);
-    for (int i = 0; i < attr.size(); i++) {
-        attr[i] = {&trie, new int(i), new int(iteration_count)};
-    }
+    Trie<string, int> trie;
+    trie.insert("k1", 1);
+    trie.insert("k2", 2);
+    trie.insert("k3", 3);
+    trie.insert("k30", 30);
+    trie.insert("k4", 4);
+     trie.remove("k30");
 
-    for (int i = 0; i < thread.size(); i++) {
-        pthread_create(&thread[i], nullptr, [](void *args) -> void * {
-            auto *trie = (Trie<int, int> *) (*static_cast<vector<void *> *>(args))[0];
-            int *id = (int *) (*static_cast<vector<void *> *>(args))[1];
-            int *iteration_count = (int *) (*static_cast<vector<void *> *>(args))[2];
-            for (int i = *id * (*iteration_count); i < (*id + 1) * (*iteration_count); i++) {
-//                cout << "LOG[" <<  to_string(*id) <<  "]:" << " Inserted "  << i << endl;
-                trie->insert(i, i);
-            }
-            pthread_exit(nullptr);
-        }, &attr[i]);
-
-    }
-
-    for (unsigned long i: thread) {
-        pthread_join(i, nullptr);
-    }
-
-//    ofstream f = std::ofstream("graph.txt");
-//    visualize(f, &trie);
-//    system("dot -Tpng ./graph.txt -o graph.png");
-//    f.close();
+    ofstream f = std::ofstream("graph.txt");
+    visualize(f, &trie);
+    system("dot -Tpng ./graph.txt -o graph.png");
+    f.close();
 
 }

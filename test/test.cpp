@@ -118,7 +118,7 @@ TEST(CNode, HAPPY_FLOW__GET_COPY) {
     ASSERT_EQ(c1->bmp.data, c2->bmp.data);
 }
 
-TEST(CNode, HAPPY_FLOW_GET__NODE_NOT_FOUND) {
+TEST(CNode, HAPPY_FLOW_GET__NODE_LOOKUP_NOT_FOUND) {
     // arrange
     CNode<string, int> node;
     node.bmp = {0b100001};
@@ -137,8 +137,8 @@ TEST(TRIE, HAPPY_FLOW__INSERT_TO_EMPTY_TRIE) {
     trie.insert("abc", 1);
 
     // assert
-    ASSERT_NE(trie.root->waitMain()->getSubNode(8), nullptr);
-    ASSERT_EQ(trie.root->waitMain()->getSubNode(0), nullptr);
+    ASSERT_NE(trie.root->main.load()->getSubNode(8), nullptr);
+    ASSERT_EQ(trie.root->main.load()->getSubNode(0), nullptr);
 }
 
 TEST(TRIE, HAPPY_FLOW__LOOKUP) {
@@ -198,33 +198,32 @@ TEST(TRIE, HAPPY_FLOW__LOOKUP) {
     ASSERT_EQ(trie.lookup("k24").value, 24);
     ASSERT_EQ(trie.lookup("k25").value, 25);
 
-    ASSERT_EQ(trie.lookup("k222"), NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k223"), NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k224"), NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k225"), NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k226"), NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k227"), NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k228"), NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k229"), NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k2210"), NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k2211"), NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k2212"), NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k2213"), NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k2214"), NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k2215"), NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k2216"), NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k2217"), NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k2218"), NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k2229"), NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k2220"), NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k2222"), NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k2223"), NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k2224"), NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k2225"), NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k2226"), NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k227"), NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k2228"), NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k22d29"), NOT_FOUND);
+    ASSERT_EQ(trie.lookup("k223"), LOOKUP_NOT_FOUND);
+    ASSERT_EQ(trie.lookup("k224"), LOOKUP_NOT_FOUND);
+    ASSERT_EQ(trie.lookup("k225"), LOOKUP_NOT_FOUND);
+    ASSERT_EQ(trie.lookup("k226"), LOOKUP_NOT_FOUND);
+    ASSERT_EQ(trie.lookup("k227"), LOOKUP_NOT_FOUND);
+    ASSERT_EQ(trie.lookup("k228"), LOOKUP_NOT_FOUND);
+    ASSERT_EQ(trie.lookup("k229"), LOOKUP_NOT_FOUND);
+    ASSERT_EQ(trie.lookup("k2210"), LOOKUP_NOT_FOUND);
+    ASSERT_EQ(trie.lookup("k2211"), LOOKUP_NOT_FOUND);
+    ASSERT_EQ(trie.lookup("k2212"), LOOKUP_NOT_FOUND);
+    ASSERT_EQ(trie.lookup("k2213"), LOOKUP_NOT_FOUND);
+    ASSERT_EQ(trie.lookup("k2214"), LOOKUP_NOT_FOUND);
+    ASSERT_EQ(trie.lookup("k2215"), LOOKUP_NOT_FOUND);
+    ASSERT_EQ(trie.lookup("k2216"), LOOKUP_NOT_FOUND);
+    ASSERT_EQ(trie.lookup("k2217"), LOOKUP_NOT_FOUND);
+    ASSERT_EQ(trie.lookup("k2218"), LOOKUP_NOT_FOUND);
+    ASSERT_EQ(trie.lookup("k2229"), LOOKUP_NOT_FOUND);
+    ASSERT_EQ(trie.lookup("k2220"), LOOKUP_NOT_FOUND);
+    ASSERT_EQ(trie.lookup("k2222"), LOOKUP_NOT_FOUND);
+    ASSERT_EQ(trie.lookup("k2223"), LOOKUP_NOT_FOUND);
+    ASSERT_EQ(trie.lookup("k2224"), LOOKUP_NOT_FOUND);
+    ASSERT_EQ(trie.lookup("k2225"), LOOKUP_NOT_FOUND);
+    ASSERT_EQ(trie.lookup("k2226"), LOOKUP_NOT_FOUND);
+    ASSERT_EQ(trie.lookup("k227"), LOOKUP_NOT_FOUND);
+    ASSERT_EQ(trie.lookup("k2228"), LOOKUP_NOT_FOUND);
+    ASSERT_EQ(trie.lookup("k22d29"), LOOKUP_NOT_FOUND);
 
 }
 
@@ -234,24 +233,25 @@ TEST(TRIE, HAPPY_FLOW__REMOVE_ALL_KEYS) {
     trie.insert("k1", 1);
     trie.insert("k2", 2);
     trie.insert("k3", 3);
-    trie.insert("k30", 3);
+    trie.insert("k30", 30);
     trie.insert("k4", 4);
 
     // act
-    ASSERT_EQ(trie.remove("k1"), true);
-    ASSERT_EQ(trie.remove("k2"), true);
-    ASSERT_EQ(trie.remove("k30"), true);
-    ASSERT_EQ(trie.remove("k3"), true);
-    ASSERT_EQ(trie.remove("k4"), true);
-    ASSERT_EQ(trie.remove("k5"), false);
-    ASSERT_EQ(trie.remove("k7"), false);
+    ASSERT_EQ(trie.remove("k1"), createSuccessfulRemoveResult(1));
+    ASSERT_EQ(trie.remove("k2"), createSuccessfulRemoveResult(2));
+//    ASSERT_EQ(trie.remove("k30"), createSuccessfulRemoveResult(30));
+    ASSERT_EQ(trie.remove("k30").value, 30);
+    ASSERT_EQ(trie.remove("k3"), createSuccessfulRemoveResult(3));
+    ASSERT_EQ(trie.remove("k4"), createSuccessfulRemoveResult(4));
+    ASSERT_EQ(trie.remove("k5"), REMOVE_NOT_FOUND);
+    ASSERT_EQ(trie.remove("k7"), REMOVE_NOT_FOUND);
 
     // assert
-    ASSERT_EQ(trie.lookup("k1"), NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k2"), NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k3"), NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k30"), NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k4"), NOT_FOUND);
+    ASSERT_EQ(trie.lookup("k1"), LOOKUP_NOT_FOUND);
+    ASSERT_EQ(trie.lookup("k2"), LOOKUP_NOT_FOUND);
+    ASSERT_EQ(trie.lookup("k3"), LOOKUP_NOT_FOUND);
+    ASSERT_EQ(trie.lookup("k30"), LOOKUP_NOT_FOUND);
+    ASSERT_EQ(trie.lookup("k4"), LOOKUP_NOT_FOUND);
 
 }
 
@@ -266,17 +266,16 @@ TEST(TRIE, HAPPY_FLOW__INSERTING_AND_REMOVING_KEYS_BY_ONE_THREAD) {
     }
 
     for (int i = 0; i < count; i++) {
-        ASSERT_EQ(trie.lookup(i).state, Found);
-        ASSERT_EQ(trie.lookup(i).value, i);
+        ASSERT_EQ(trie.lookup(i), createSuccessfulLookupResult(i));
     }
 
     for (int i = 0; i < count; i++) {
-        ASSERT_EQ(trie.remove(i), true);
+        ASSERT_EQ(trie.remove(i), createSuccessfulRemoveResult(i));
     }
 
     // assert
     for (int i = 0; i < count; i++) {
-        ASSERT_EQ(trie.lookup(i), NOT_FOUND);
+        ASSERT_EQ(trie.lookup(i), LOOKUP_NOT_FOUND);
     }
 
 }
@@ -315,8 +314,7 @@ TEST(TRIE, HAPPY_FLOW__INSERTING_AND_LOOKING_UP_BY_MANY_THREAD) {
     // assert
     for (int i = 0; i < iteration_count * thread_count; i++) {
 //        cout << i << endl;
-        ASSERT_EQ(trie.lookup(i).state, Found);
-        ASSERT_EQ(trie.lookup(i).value, i);
+        ASSERT_EQ(trie.lookup(i), createSuccessfulLookupResult(i));
     }
 }
 
@@ -325,7 +323,7 @@ TEST(TRIE, HAPPY_FLOW__INSERTING_BY_MANY_THREAD) {
     // arrange
     Trie<int, int> trie;
     int thread_count = 10;
-    int iteration_count = 10000;
+    int iteration_count = 100000;
 
     vector<pthread_t> thread(thread_count);
     vector<vector<void *>> attr(thread_count);
@@ -354,7 +352,7 @@ TEST(TRIE, HAPPY_FLOW__INSERTING_BY_MANY_THREAD) {
 
     // assert
     for (int i = 0; i < iteration_count * thread_count; i++) {
-        ASSERT_EQ(trie.lookup(i).state, Found);
+        ASSERT_EQ(trie.lookup(i),  createSuccessfulLookupResult(i));
         ASSERT_EQ(trie.lookup(i).value, i);
     }
 }
@@ -381,7 +379,7 @@ TEST(TRIE, HAPPY_FLOW__LOOKING_UP_KEYS_BY_MANY_THREAD) {
             int *iteration_count = (int *) (*static_cast<vector<void *> *>(args))[1];
 
             for (int i = 0; i < *iteration_count; i++) {
-                assert(trie->lookup(i) == NOT_FOUND);
+                assert(trie->lookup(i) == LOOKUP_NOT_FOUND);
             }
 
             pthread_exit(nullptr);
@@ -395,10 +393,10 @@ TEST(TRIE, HAPPY_FLOW__LOOKING_UP_KEYS_BY_MANY_THREAD) {
 
     // assert
     for (int i = 0; i < iteration_count; i++) {
-        ASSERT_EQ(trie.lookup(i), NOT_FOUND);
+        ASSERT_EQ(trie.lookup(i), LOOKUP_NOT_FOUND);
     }
     for (int i = iteration_count; i < iteration_count * 10; i++) {
-        ASSERT_EQ(trie.lookup(i).state, Found);
+        ASSERT_EQ(trie.lookup(i),  createSuccessfulLookupResult(i));
     }
 }
 
@@ -422,9 +420,9 @@ TEST(TRIE, HAPPY_FLOW__INSERTING_AND_REMOVING_ONE_ELEMENT_BY_MANY_THREAD) {
 
             for (int i = 0; i < *iteration_count; i++) {
                 trie->insert(i, i);
-                assert(trie->lookup(i).state == Found);
+                assert(trie->lookup(i) ==  createSuccessfulLookupResult(i));
                 trie->remove( i);
-                assert(trie->lookup(i) == NOT_FOUND);
+                assert(trie->lookup(i) == LOOKUP_NOT_FOUND);
             }
 
             pthread_exit(nullptr);
@@ -438,7 +436,7 @@ TEST(TRIE, HAPPY_FLOW__INSERTING_AND_REMOVING_ONE_ELEMENT_BY_MANY_THREAD) {
 
     // assert
     for (int i = 0; i < iteration_count * thread_count; i++) {
-        ASSERT_EQ(trie.lookup(i), NOT_FOUND);
+        ASSERT_EQ(trie.lookup(i), LOOKUP_NOT_FOUND);
     }
 }
 
@@ -494,7 +492,7 @@ TEST(TRIE, HAPPY_FLOW__KEY_INSERTING_AND_REMOVING_SEQUENTALLY_BY_MANY_THREAD) {
 
             for (int i = *id * (*iteration_count); i < (*id + 1) * (*iteration_count); i++) {
                 trie->insert(i, i);
-                assert(trie->remove(i) == true);
+                assert(trie->remove(i) == createSuccessfulRemoveResult(i));
             }
 
             pthread_exit(nullptr);
@@ -508,7 +506,7 @@ TEST(TRIE, HAPPY_FLOW__KEY_INSERTING_AND_REMOVING_SEQUENTALLY_BY_MANY_THREAD) {
 
     // assert
     for (int i = 0; i < iteration_count * thread_count; i++) {
-        ASSERT_EQ(trie.lookup(i), NOT_FOUND);
+        ASSERT_EQ(trie.lookup(i), LOOKUP_NOT_FOUND);
     }
 }
 
@@ -560,7 +558,7 @@ TEST(TRIE, HAPPY_FLOW__KEY_RANDOM_ACTIONS_BY_MANY_THREAD) {
 
     // assert
     for (int i = 0; i < iteration_count; i++) {
-        ASSERT_EQ(trie.lookup(i), NOT_FOUND);
+        ASSERT_EQ(trie.lookup(i), LOOKUP_NOT_FOUND);
     }
 }
 
@@ -584,14 +582,12 @@ TEST(TRIE, HAPPY_FLOW___RANDOM_REMOVING_BY_MANY_THREAD) {
             int *iteration_count = (int *) (*static_cast<vector<void *> *>(args))[2];
             set<int> keys;
             for (int i = (*id) * (*iteration_count); i < (*id + 1) * (*iteration_count); i++) {
-//                cout << "LOG[" + to_string(*id) + "] " + "key=" + to_string(i) +  " inserted \n";
                 keys.insert(i);
                 trie->insert(i, i);
             }
             while (!keys.empty()) {
                 int key = rand() % (*iteration_count) + (*id) * (*iteration_count);
-                if (trie->remove(key)) {
-//                    cout << "LOG[" + to_string(*id) + "] " + "key=" + to_string(key) +  "removed \n";
+                if (trie->remove(key) != createSuccessfulRemoveResult(key)) {
                     keys.erase(key);
                 }
             }
@@ -608,7 +604,7 @@ TEST(TRIE, HAPPY_FLOW___RANDOM_REMOVING_BY_MANY_THREAD) {
 
     // assert
     for (int i = 0; i < iteration_count; i++) {
-        ASSERT_EQ(trie.lookup(i), NOT_FOUND);
+        ASSERT_EQ(trie.lookup(i), LOOKUP_NOT_FOUND);
     }
 }
 
@@ -649,7 +645,7 @@ TEST(TRIE, HAPPY_FLOW___INSERTING_THE_SAME_KEY_MANY_TIMES_BY_MANY_THREAD) {
     }
 
     // assert
-    ASSERT_EQ(trie.lookup(0).state, Found);
+    ASSERT_EQ(trie.lookup(0).status, LookupResult::Found);
     ASSERT_LT(trie.lookup(0).value, thread.size());
     ASSERT_GE(trie.lookup(0).value, 0);
 
