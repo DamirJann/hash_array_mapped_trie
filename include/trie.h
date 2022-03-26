@@ -308,8 +308,7 @@ void transformToWithDownChild(CNode<K, V> *c1, SNode<K, V> *child2, SNode<K, V> 
 }
 
 template<class K, class V>
-bool transformToWithDeletedKey(CNode<K, V> *copy, Node *subNode, K key, uint8_t path) {
-    SNode<K, V> *subNode = static_cast<SNode<K, V> *>(copy->getSubNode(path));
+bool transformToWithDeletedKey(CNode<K, V> *copy, SNode<K, V> *subNode, K key, uint8_t path) {
 
     for (auto &p: subNode->pair) {
         if (p.key == key) {
@@ -399,7 +398,9 @@ private:
     RemoveResult remove(INode<K, V> *currentNode, INode<K, V> *parent, K key, uint64_t hash, uint8_t level) {
         CNode<K, V> *old = currentNode->main.load();
         CNode<K, V> *updated = getCopy(old);
-        Node *subNode = currentNode->main.load()->getSubNode(extractHashPartByLevel(hash, level));
+
+        uint8_t path = extractHashPartByLevel(hash, level);
+        Node *subNode = updated->getSubNode(path);
 
         if (subNode == nullptr) {
             return REMOVE_NOT_FOUND;
@@ -407,10 +408,13 @@ private:
             if (!static_cast<SNode<K, V> *>(subNode)->contains(key)) {
                 return REMOVE_NOT_FOUND;
             } else {
-                transformToWithDeletedKey(updated,  subNode, key,extractHashPartByLevel(hash, level));
+                transformToWithDeletedKey(updated, static_cast<SNode<K, V> *>(subNode), key,
+                                          extractHashPartByLevel(hash, level));
+                transformToWithDelete
+
             }
         } else if (subNode->type == INODE) {
-            return this->remove(currentNode, static_cast<INode<K, V> *>(subNode), key, hash, level + 1));
+            return this->remove(currentNode, static_cast<INode<K, V> *>(subNode), key, hash, level + 1);
         }
 
         contractParent(parent, currentNode, extractHashPartByLevel(hash, level - 1));
@@ -421,7 +425,7 @@ private:
         CNode<K, V> *old = currentNode->main.load();
         CNode<K, V> *updated = getCopy(old);
 
-        int path = extractHashPartByLevel(newNode->getHash(), level);
+        uint8_t path = extractHashPartByLevel(newNode->getHash(), level);
         Node *subNode = updated->getSubNode(path);
 
         if (subNode == nullptr) {
