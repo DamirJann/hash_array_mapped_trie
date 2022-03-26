@@ -15,4 +15,4 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Test project with googletest.
-        uses: damirjann/hash_array_mapped_trie@lock_free_hamt
+        uses: damirjann/hash_array_mapped_trie@main
