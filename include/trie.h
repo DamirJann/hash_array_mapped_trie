@@ -130,7 +130,6 @@ public:
         bmp = {0};
     }
 
-
     Node *getSubNode(uint8_t path) {
         if (!bmp.isSet(path)) return nullptr;
         int index = this->getArrayIndexByBmp(path);
@@ -179,14 +178,6 @@ public:
 
     INode(CNode<K, V> *main) : INode() {
         this->main.store(main, std::memory_order_seq_cst);
-    }
-
-    bool swapToCopyWithReplacedChild(Node *newChild, uint8_t path) {
-        CNode<K, V> *copy = getCopy(main.load());
-        copy->replaceChild(newChild, path);
-        // cas
-        this->main = copy;
-        return true;
     }
 
     atomic<CNode<K, V> *> main;
@@ -284,8 +275,12 @@ transformToWithDownChild(CNode<K, V> *updated, SNode<K, V> *child2, SNode<K, V> 
 template<class K, class V>
 void transformToWithDeletedKey(CNode<K, V> *updated, SNode<K, V> *subNode, K key, uint8_t path) {
     auto *newSubNode = new SNode<K, V>(*subNode);
-    newSubNode->pair.erase({key, subNode->getValue(key)});
-    updated->replaceChild(newSubNode, path);
+    if (newSubNode->pair.size() > 1) {
+        newSubNode->pair.erase({key, subNode->getValue(key)});
+        updated->replaceChild(newSubNode, path);
+    } else {
+        updated->deleteChild(path);
+    }
 }
 
 

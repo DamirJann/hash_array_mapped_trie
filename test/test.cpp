@@ -284,7 +284,7 @@ TEST(TRIE, HAPPY_FLOW__INSERTING_AND_LOOKING_UP_BY_MANY_THREAD) {
     // arrange
     Trie<int, int> trie;
     int thread_count = 10;
-    int iteration_count = 10000;
+    int iteration_count = 100000;
 
     vector<pthread_t> thread(thread_count);
     vector<vector<void *>> attr(thread_count);
@@ -322,7 +322,7 @@ TEST(TRIE, HAPPY_FLOW__INSERTING_BY_MANY_THREAD) {
     // arrange
     Trie<int, int> trie;
     int thread_count = 10;
-    int iteration_count = 10000;
+    int iteration_count = 100000;
 
     vector<pthread_t> thread(thread_count);
     vector<vector<void *>> attr(thread_count);
@@ -360,7 +360,7 @@ TEST(TRIE, HAPPY_FLOW__LOOKING_UP_KEYS_BY_MANY_THREAD) {
     // arrange
     Trie<int, int> trie;
     int thread_count = 10;
-    int iteration_count = 10000;
+    int iteration_count = 100000;
 
     for (int i = iteration_count; i < iteration_count * 10; i++) {
         trie.insert(i, i);
@@ -404,7 +404,7 @@ TEST(TRIE, HAPPY_FLOW__INSERTING_AND_REMOVING_ONE_ELEMENT_BY_MANY_THREAD) {
     // arrange
     Trie<int, int> trie;
     int thread_count = 10;
-    int iteration_count = 10000;
+    int iteration_count = 100000;
 
     vector<pthread_t> thread(thread_count);
     vector<vector<void *>> attr(thread_count);
@@ -444,7 +444,7 @@ TEST(TRIE, HAPPY_FLOW__INSERTING_AND_REMOVING_RANDOM_KEY_BY_MANY_THREAD) {
     // arrange
     Trie<int, int> trie;
     int thread_count = 10;
-    int iteration_count = 10000;
+    int iteration_count = 100000;
 
     vector<pthread_t> thread(thread_count);
     vector<vector<void *>> attr(thread_count);
@@ -476,7 +476,7 @@ TEST(TRIE, HAPPY_FLOW__KEY_INSERTING_AND_REMOVING_SEQUENTALLY_BY_MANY_THREAD) {
     // arrange
     Trie<int, int> trie;
     int thread_count = 10;
-    int iteration_count = 10000;
+    int iteration_count = 100000;
 
     vector<pthread_t> thread(thread_count);
     vector<vector<void *>> attr(thread_count);
@@ -567,7 +567,7 @@ TEST(TRIE, HAPPY_FLOW___RANDOM_REMOVING_BY_MANY_THREAD) {
     // arrange
     Trie<int, int> trie;
     int thread_count = 10;
-    int iteration_count = 10000;
+    int iteration_count = 100000;
 
     vector<pthread_t> thread(thread_count);
     vector<vector<void *>> attr(thread_count);
@@ -613,7 +613,7 @@ TEST(TRIE, HAPPY_FLOW___INSERTING_THE_SAME_KEY_MANY_TIMES_BY_MANY_THREAD) {
     // arrange
     Trie<int, int> trie;
     int thread_count = 10;
-    int iteration_count = 10000;
+    int iteration_count = 100000;
 
     vector<pthread_t> thread(thread_count);
     vector<vector<void *>> attr(thread_count);
@@ -621,7 +621,7 @@ TEST(TRIE, HAPPY_FLOW___INSERTING_THE_SAME_KEY_MANY_TIMES_BY_MANY_THREAD) {
         attr[i] = {&trie, new int(i), new int(iteration_count)};
     }
 
-    for (int i = 1; i < 10000; i++) {
+    for (int i = 1; i < 100000; i++) {
         trie.insert(i, i);
     }
 
