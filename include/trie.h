@@ -192,24 +192,6 @@ public:
     atomic<CNode<K, V> *> main;
 };
 
-template<class K, class V>
-bool contractParent(INode<K, V> *currentNode, INode<K, V> *reducedNode, uint8_t path) {
-    if (currentNode == nullptr) return false;
-
-    switch (reducedNode->main.load()->getChildCount()) {
-        case 0: {
-            return true;
-        }
-        case 1: {
-            Node *replaced = reducedNode->main.load()->getFirst();
-            currentNode->swapToCopyWithReplacedChild(replaced, path);
-            return true;
-        }
-        default: {
-            return false;
-        }
-    }
-}
 
 struct LookupResult {
     enum LookupResultStatus {
@@ -275,29 +257,54 @@ CNode<K, V> *getCopy(CNode<K, V> *node) {
 }
 
 template<class K, class V>
-void transformToWithReplacedPair(CNode<K, V> *copy, SNode<K, V> *subNode, SNode<K, V> *newNode, uint8_t path) {
-    copy->replaceChild(leftMerge(newNode, subNode), path);
+void transformToContractedParent(CNode<K, V> *updated, CNode<K, V> *m, uint8_t path) {
+    updated->replaceChild(m->getFirst(), path);
 }
 
 template<class K, class V>
-void transformToWithMergedChild(CNode<K, V> *copy, SNode<K, V> *subNode, SNode<K, V> *newNode, uint8_t path) {
-    copy->replaceChild(leftMerge(newNode, subNode), path);
+void transformToWithReplacedPair(CNode<K, V> *updated, SNode<K, V> *subNode, SNode<K, V> *newNode, uint8_t path) {
+    updated->replaceChild(leftMerge(newNode, subNode), path);
 }
 
 template<class K, class V>
-void transformToWithDownChild(CNode<K, V> *c1, SNode<K, V> *child2, SNode<K, V> *child3, uint8_t level, uint8_t path) {
+void transformToWithMergedChild(CNode<K, V> *updated, SNode<K, V> *subNode, SNode<K, V> *newNode, uint8_t path) {
+    updated->replaceChild(leftMerge(newNode, subNode), path);
+}
+
+template<class K, class V>
+void
+transformToWithDownChild(CNode<K, V> *updated, SNode<K, V> *child2, SNode<K, V> *child3, uint8_t level, uint8_t path) {
     auto *c2 = new CNode<K, V>();
     c2->insertChild(child2, extractHashPartByLevel(child2->getHash(), level + 1));
     c2->insertChild(child3, extractHashPartByLevel(child3->getHash(), level + 1));
     auto *i2 = new INode<K, V>(c2);
-    c1->replaceChild(i2, path);
+    updated->replaceChild(i2, path);
 }
 
 template<class K, class V>
-void transformToWithDeletedKey(CNode<K, V> *copy, SNode<K, V> *subNode, K key, uint8_t path) {
+void transformToWithDeletedKey(CNode<K, V> *updated, SNode<K, V> *subNode, K key, uint8_t path) {
     auto *newSubNode = new SNode<K, V>(*subNode);
     newSubNode->pair.erase({key, subNode->getValue(key)});
-    copy->replaceChild(newSubNode, path);
+    updated->replaceChild(newSubNode, path);
+}
+
+
+template<class K, class V>
+void contractParent(INode<K, V> *parent, INode<K, V> *i, uint8_t path) {
+    while (true) {
+        CNode<K, V> *old = parent->main.load();
+        CNode<K, V> *updated = getCopy(old);
+        CNode<K, V> *m = i->main.load();
+
+        if (old->getChildCount() == 1) {
+            transformToContractedParent(updated, m, path);
+            if (parent->main.compare_exchange_strong(old, updated)) {
+                break;
+            }
+        } else {
+            break;
+        }
+    }
 }
 
 template<class K, class V>
@@ -380,25 +387,34 @@ private:
         uint8_t path = extractHashPartByLevel(hash, level);
         Node *subNode = updated->getSubNode(path);
 
+        RemoveResult res{};
+
         if (subNode == nullptr) {
-            return REMOVE_NOT_FOUND;
+            res = REMOVE_NOT_FOUND;
         } else if (subNode->type == SNODE) {
             if (!static_cast<SNode<K, V> *>(subNode)->contains(key)) {
-                return REMOVE_NOT_FOUND;
+                res = REMOVE_NOT_FOUND;
             } else {
                 V deletedValue = static_cast<SNode<K, V> *>(subNode)->getValue(key);
                 transformToWithDeletedKey(updated, static_cast<SNode<K, V> *>(subNode), key,
                                           extractHashPartByLevel(hash, level));
-                return (currentNode->main.compare_exchange_strong(old, updated))
-                       ? createSuccessfulRemoveResult(deletedValue) : REMOVE_RESTART;
+                res = (currentNode->main.compare_exchange_strong(old, updated))
+                      ? createSuccessfulRemoveResult(deletedValue) : REMOVE_RESTART;
             }
         } else if (subNode->type == INODE) {
-            return this->remove(static_cast<INode<K, V> *>(subNode), static_cast<INode<K, V> *>(subNode), key, hash,
-                                level + 1);
+            res = this->remove(static_cast<INode<K, V> *>(subNode), static_cast<INode<K, V> *>(subNode), key, hash,
+                               level + 1);
         }
 
-//        contractParent(parent, currentNode, extractHashPartByLevel(hash, level - 1));
-        return REMOVE_NOT_FOUND;
+        if (res == REMOVE_NOT_FOUND || res == REMOVE_RESTART) {
+            return res;
+        }
+
+        if (parent != nullptr) {
+            contractParent(parent, currentNode, extractHashPartByLevel(hash, level - 1));
+        }
+
+        return res;
     }
 
     bool insert(INode<K, V> *currentNode, SNode<K, V> *newNode, uint8_t level) {

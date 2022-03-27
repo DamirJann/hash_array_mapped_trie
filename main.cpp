@@ -8,10 +8,14 @@
 
 int main(){
     // arrange
-//    Trie<int, int> trie;
-//    int thread_count = 5;
-//    int iteration_count = 100000;
-//
+    Trie<int, int> trie;
+    int thread_count = 1;
+    int iteration_count = 100000;
+    for (int i = 0 ; i < 500; i++){
+        trie.insert(rand()%5000, rand()%20);
+    }
+
+
 //    vector<pthread_t> thread(thread_count);
 //    vector<vector<void *>> attr(thread_count);
 //    for (int i = 0; i < attr.size(); i++) {
@@ -36,13 +40,6 @@ int main(){
 //        pthread_join(i, nullptr);
 //    }
 
-    Trie<string, int> trie;
-    trie.insert("k1", 1);
-    trie.insert("k2", 2);
-    trie.insert("k3", 3);
-    trie.insert("k30", 30);
-    trie.insert("k4", 4);
-     trie.remove("k30");
 
     ofstream f = std::ofstream("graph.txt");
     visualize(f, &trie);
