@@ -11,6 +11,7 @@
 #include <gtest/gtest.h>
 #include <random>
 
+int averageIterationCount = 100'000'000;
 
 TEST(BITMAP, HAPPY_FLOW__IS_SET_TRUE_AT_THE_BEGINNING_OF_BITMAP) {
     // arrange
@@ -283,22 +284,21 @@ TEST(TRIE, HAPPY_FLOW__INSERTING_AND_REMOVING_KEYS_BY_ONE_THREAD) {
 TEST(TRIE, HAPPY_FLOW__INSERTING_AND_LOOKING_UP_BY_MANY_THREAD) {
     // arrange
     Trie<int, int> trie;
-    int thread_count = 10;
-    int iteration_count = 100000;
+    int threadCount = 10;
 
-    vector<pthread_t> thread(thread_count);
-    vector<vector<void *>> attr(thread_count);
+    vector<pthread_t> thread(threadCount);
+    vector<vector<void *>> attr(threadCount);
     for (int i = 0; i < attr.size(); i++) {
-        attr[i] = {&trie, new int(i), new int(iteration_count)};
+        attr[i] = {&trie, new int(i), new int(averageIterationCount)};
     }
 
     for (int i = 0; i < thread.size(); i++) {
         pthread_create(&thread[i], nullptr, [](void *args) -> void * {
             auto *trie = (Trie<int, int> *) (*static_cast<vector<void *> *>(args))[0];
             int *id = (int *) (*static_cast<vector<void *> *>(args))[1];
-            int *iteration_count = (int *) (*static_cast<vector<void *> *>(args))[2];
+            int *averageIterationCount = (int *) (*static_cast<vector<void *> *>(args))[2];
 
-            for (int i = *id * (*iteration_count); i < (*id + 1) * (*iteration_count); i++) {
+            for (int i = *id * (*averageIterationCount); i < (*id + 1) * (*averageIterationCount); i++) {
                 trie->insert(i, i);
             }
             pthread_exit(nullptr);
@@ -311,7 +311,7 @@ TEST(TRIE, HAPPY_FLOW__INSERTING_AND_LOOKING_UP_BY_MANY_THREAD) {
     }
 
     // assert
-    for (int i = 0; i < iteration_count * thread_count; i++) {
+    for (int i = 0; i < averageIterationCount * threadCount; i++) {
 //        cout << i << endl;
         ASSERT_EQ(trie.lookup(i), createSuccessfulLookupResult(i));
     }
@@ -321,22 +321,22 @@ TEST(TRIE, HAPPY_FLOW__INSERTING_AND_LOOKING_UP_BY_MANY_THREAD) {
 TEST(TRIE, HAPPY_FLOW__INSERTING_BY_MANY_THREAD) {
     // arrange
     Trie<int, int> trie;
-    int thread_count = 10;
-    int iteration_count = 100000;
+    int threadCount = 10;
 
-    vector<pthread_t> thread(thread_count);
-    vector<vector<void *>> attr(thread_count);
+
+    vector<pthread_t> thread(threadCount);
+    vector<vector<void *>> attr(threadCount);
     for (int i = 0; i < attr.size(); i++) {
-        attr[i] = {&trie, new int(i), new int(iteration_count)};
+        attr[i] = {&trie, new int(i), new int(averageIterationCount)};
     }
 
     for (int i = 0; i < thread.size(); i++) {
         pthread_create(&thread[i], nullptr, [](void *args) -> void * {
             auto *trie = (Trie<int, int> *) (*static_cast<vector<void *> *>(args))[0];
             int *id = (int *) (*static_cast<vector<void *> *>(args))[1];
-            int *iteration_count = (int *) (*static_cast<vector<void *> *>(args))[2];
+            int *averageIterationCount = (int *) (*static_cast<vector<void *> *>(args))[2];
 
-            for (int i = *id * (*iteration_count); i < (*id + 1) * (*iteration_count); i++) {
+            for (int i = *id * (*averageIterationCount); i < (*id + 1) * (*averageIterationCount); i++) {
                 trie->insert(i, i);
             }
 
@@ -350,7 +350,7 @@ TEST(TRIE, HAPPY_FLOW__INSERTING_BY_MANY_THREAD) {
     }
 
     // assert
-    for (int i = 0; i < iteration_count * thread_count; i++) {
+    for (int i = 0; i < averageIterationCount * threadCount; i++) {
         ASSERT_EQ(trie.lookup(i), createSuccessfulLookupResult(i));
         ASSERT_EQ(trie.lookup(i).value, i);
     }
@@ -359,25 +359,24 @@ TEST(TRIE, HAPPY_FLOW__INSERTING_BY_MANY_THREAD) {
 TEST(TRIE, HAPPY_FLOW__LOOKING_UP_KEYS_BY_MANY_THREAD) {
     // arrange
     Trie<int, int> trie;
-    int thread_count = 10;
-    int iteration_count = 100000;
+    int threadCount = 10;
 
-    for (int i = iteration_count; i < iteration_count * 10; i++) {
+    for (int i = averageIterationCount; i < averageIterationCount * 10; i++) {
         trie.insert(i, i);
     }
 
-    vector<pthread_t> thread(thread_count);
-    vector<vector<void *>> attr(thread_count);
+    vector<pthread_t> thread(threadCount);
+    vector<vector<void *>> attr(threadCount);
     for (int i = 0; i < attr.size(); i++) {
-        attr[i] = {&trie, new int(i), new int(iteration_count)};
+        attr[i] = {&trie, new int(i), new int(averageIterationCount)};
     }
 
     for (int i = 0; i < thread.size(); i++) {
         pthread_create(&thread[i], nullptr, [](void *args) -> void * {
             auto *trie = (Trie<int, int> *) (*static_cast<vector<void *> *>(args))[0];
-            int *iteration_count = (int *) (*static_cast<vector<void *> *>(args))[1];
+            int *averageIterationCount = (int *) (*static_cast<vector<void *> *>(args))[1];
 
-            for (int i = 0; i < *iteration_count; i++) {
+            for (int i = 0; i < *averageIterationCount; i++) {
                 assert(trie->lookup(i) == LOOKUP_NOT_FOUND);
             }
 
@@ -391,10 +390,10 @@ TEST(TRIE, HAPPY_FLOW__LOOKING_UP_KEYS_BY_MANY_THREAD) {
     }
 
     // assert
-    for (int i = 0; i < iteration_count; i++) {
+    for (int i = 0; i < averageIterationCount; i++) {
         ASSERT_EQ(trie.lookup(i), LOOKUP_NOT_FOUND);
     }
-    for (int i = iteration_count; i < iteration_count * 10; i++) {
+    for (int i = averageIterationCount; i < averageIterationCount * 10; i++) {
         ASSERT_EQ(trie.lookup(i), createSuccessfulLookupResult(i));
     }
 }
@@ -403,22 +402,22 @@ TEST(TRIE, HAPPY_FLOW__LOOKING_UP_KEYS_BY_MANY_THREAD) {
 TEST(TRIE, HAPPY_FLOW__INSERTING_AND_REMOVING_ONE_ELEMENT_BY_MANY_THREAD) {
     // arrange
     Trie<int, int> trie;
-    int thread_count = 10;
-    int iteration_count = 100000;
+    int threadCount = 10;
 
-    vector<pthread_t> thread(thread_count);
-    vector<vector<void *>> attr(thread_count);
+
+    vector<pthread_t> thread(threadCount);
+    vector<vector<void *>> attr(threadCount);
     for (int i = 0; i < attr.size(); i++) {
-        attr[i] = {&trie, new int(i), new int(iteration_count)};
+        attr[i] = {&trie, new int(i), new int(averageIterationCount)};
     }
 
     for (int i = 0; i < thread.size(); i++) {
         pthread_create(&thread[i], nullptr, [](void *args) -> void * {
             auto *trie = (Trie<int, int> *) (*static_cast<vector<void *> *>(args))[0];
             int *id = (int *) (*static_cast<vector<void *> *>(args))[1];
-            int *iteration_count = (int *) (*static_cast<vector<void *> *>(args))[2];
+            int *averageIterationCount = (int *) (*static_cast<vector<void *> *>(args))[2];
 
-            for (int i = *id * (*iteration_count); i < (*id + 1) * (*iteration_count); i++) {
+            for (int i = *id * (*averageIterationCount); i < (*id + 1) * (*averageIterationCount); i++) {
                 trie->insert(i, i);
                 assert(trie->lookup(i) == createSuccessfulLookupResult(i));
                 trie->remove(i);
@@ -435,7 +434,7 @@ TEST(TRIE, HAPPY_FLOW__INSERTING_AND_REMOVING_ONE_ELEMENT_BY_MANY_THREAD) {
     }
 
     // assert
-    for (int i = 0; i < iteration_count * thread_count; i++) {
+    for (int i = 0; i < averageIterationCount * threadCount; i++) {
         ASSERT_EQ(trie.lookup(i), LOOKUP_NOT_FOUND);
     }
 }
@@ -443,21 +442,21 @@ TEST(TRIE, HAPPY_FLOW__INSERTING_AND_REMOVING_ONE_ELEMENT_BY_MANY_THREAD) {
 TEST(TRIE, HAPPY_FLOW__INSERTING_AND_REMOVING_RANDOM_KEY_BY_MANY_THREAD) {
     // arrange
     Trie<int, int> trie;
-    int thread_count = 10;
-    int iteration_count = 100000;
+    int threadCount = 10;
 
-    vector<pthread_t> thread(thread_count);
-    vector<vector<void *>> attr(thread_count);
+
+    vector<pthread_t> thread(threadCount);
+    vector<vector<void *>> attr(threadCount);
     for (int i = 0; i < attr.size(); i++) {
-        attr[i] = {&trie, new int(iteration_count)};
+        attr[i] = {&trie, new int(averageIterationCount)};
     }
 
     for (int i = 0; i < thread.size(); i++) {
         pthread_create(&thread[i], nullptr, [](void *args) -> void * {
             auto *trie = (Trie<int, int> *) (*static_cast<vector<void *> *>(args))[0];
-            int *iteration_count = (int *) (*static_cast<vector<void *> *>(args))[1];
+            int *averageIterationCount = (int *) (*static_cast<vector<void *> *>(args))[1];
 
-            for (int i = 0; i < *iteration_count; i++) {
+            for (int i = 0; i < *averageIterationCount; i++) {
                 int k = rand() % 100;
                 trie->insert(k, k);
                 trie->remove(k);
@@ -475,22 +474,22 @@ TEST(TRIE, HAPPY_FLOW__INSERTING_AND_REMOVING_RANDOM_KEY_BY_MANY_THREAD) {
 TEST(TRIE, HAPPY_FLOW__KEY_INSERTING_AND_REMOVING_SEQUENTALLY_BY_MANY_THREAD) {
     // arrange
     Trie<int, int> trie;
-    int thread_count = 10;
-    int iteration_count = 100000;
+    int threadCount = 10;
 
-    vector<pthread_t> thread(thread_count);
-    vector<vector<void *>> attr(thread_count);
+
+    vector<pthread_t> thread(threadCount);
+    vector<vector<void *>> attr(threadCount);
     for (int i = 0; i < attr.size(); i++) {
-        attr[i] = {&trie, new int(i), new int(iteration_count)};
+        attr[i] = {&trie, new int(i), new int(averageIterationCount)};
     }
 
     for (int i = 0; i < thread.size(); i++) {
         pthread_create(&thread[i], nullptr, [](void *args) -> void * {
             auto *trie = (Trie<int, int> *) (*static_cast<vector<void *> *>(args))[0];
             int *id = (int *) (*static_cast<vector<void *> *>(args))[1];
-            int *iteration_count = (int *) (*static_cast<vector<void *> *>(args))[2];
+            int *averageIterationCount = (int *) (*static_cast<vector<void *> *>(args))[2];
 
-            for (int i = *id * (*iteration_count); i < (*id + 1) * (*iteration_count); i++) {
+            for (int i = *id * (*averageIterationCount); i < (*id + 1) * (*averageIterationCount); i++) {
                 trie->insert(i, i);
                 assert(trie->remove(i) == createSuccessfulRemoveResult(i));
             }
@@ -505,7 +504,7 @@ TEST(TRIE, HAPPY_FLOW__KEY_INSERTING_AND_REMOVING_SEQUENTALLY_BY_MANY_THREAD) {
     }
 
     // assert
-    for (int i = 0; i < iteration_count * thread_count; i++) {
+    for (int i = 0; i < averageIterationCount * threadCount; i++) {
         ASSERT_EQ(trie.lookup(i), LOOKUP_NOT_FOUND);
     }
 }
@@ -513,21 +512,21 @@ TEST(TRIE, HAPPY_FLOW__KEY_INSERTING_AND_REMOVING_SEQUENTALLY_BY_MANY_THREAD) {
 TEST(TRIE, HAPPY_FLOW__KEY_RANDOM_ACTIONS_BY_MANY_THREAD) {
     // arrange & act
     Trie<int, int> trie;
-    int thread_count = rand() % 8 + 2;
-    int iteration_count = rand() % 50000;
+    int threadCount = rand() % 8 + 2;
+    int averageIterationCount = rand() % 50000;
 
-    vector<pthread_t> thread(thread_count);
-    vector<vector<void *>> attr(thread_count);
+    vector<pthread_t> thread(threadCount);
+    vector<vector<void *>> attr(threadCount);
     for (int i = 0; i < attr.size(); i++) {
-        attr[i] = {&trie, new int(iteration_count)};
+        attr[i] = {&trie, new int(averageIterationCount)};
     }
 
     for (int i = 0; i < thread.size(); i++) {
         pthread_create(&thread[i], nullptr, [](void *args) -> void * {
             auto *trie = (Trie<int, int> *) (*static_cast<vector<void *> *>(args))[0];
-            int *iteration_count = (int *) (*static_cast<vector<void *> *>(args))[1];
+            int *averageIterationCount = (int *) (*static_cast<vector<void *> *>(args))[1];
 
-            for (int i = 0; i < *iteration_count; i++) {
+            for (int i = 0; i < *averageIterationCount; i++) {
                 switch (rand() % 3) {
                     case 0: {
                         trie->insert(i, i);
@@ -552,12 +551,12 @@ TEST(TRIE, HAPPY_FLOW__KEY_RANDOM_ACTIONS_BY_MANY_THREAD) {
     for (unsigned long i: thread) {
         pthread_join(i, nullptr);
     }
-    for (int i = 0; i < iteration_count; i++) {
+    for (int i = 0; i < averageIterationCount; i++) {
         trie.remove(i);
     }
 
     // assert
-    for (int i = 0; i < iteration_count; i++) {
+    for (int i = 0; i < averageIterationCount; i++) {
         ASSERT_EQ(trie.lookup(i), LOOKUP_NOT_FOUND);
     }
 }
@@ -566,27 +565,27 @@ TEST(TRIE, HAPPY_FLOW__KEY_RANDOM_ACTIONS_BY_MANY_THREAD) {
 TEST(TRIE, HAPPY_FLOW___RANDOM_REMOVING_BY_MANY_THREAD) {
     // arrange
     Trie<int, int> trie;
-    int thread_count = 10;
-    int iteration_count = 100000;
+    int threadCount = 10;
 
-    vector<pthread_t> thread(thread_count);
-    vector<vector<void *>> attr(thread_count);
+
+    vector<pthread_t> thread(threadCount);
+    vector<vector<void *>> attr(threadCount);
     for (int i = 0; i < attr.size(); i++) {
-        attr[i] = {&trie, new int(i), new int(iteration_count)};
+        attr[i] = {&trie, new int(i), new int(averageIterationCount)};
     }
 
     for (int i = 0; i < thread.size(); i++) {
         pthread_create(&thread[i], nullptr, [](void *args) -> void * {
             auto *trie = (Trie<int, int> *) (*static_cast<vector<void *> *>(args))[0];
             int *id = (int *) (*static_cast<vector<void *> *>(args))[1];
-            int *iteration_count = (int *) (*static_cast<vector<void *> *>(args))[2];
+            int *averageIterationCount = (int *) (*static_cast<vector<void *> *>(args))[2];
             set<int> keys;
-            for (int i = (*id) * (*iteration_count); i < (*id + 1) * (*iteration_count); i++) {
+            for (int i = (*id) * (*averageIterationCount); i < (*id + 1) * (*averageIterationCount); i++) {
                 keys.insert(i);
                 trie->insert(i, i);
             }
             while (!keys.empty()) {
-                int key = rand() % (*iteration_count) + (*id) * (*iteration_count);
+                int key = rand() % (*averageIterationCount) + (*id) * (*averageIterationCount);
                 if (trie->remove(key) != createSuccessfulRemoveResult(key)) {
                     keys.erase(key);
                 }
@@ -603,7 +602,7 @@ TEST(TRIE, HAPPY_FLOW___RANDOM_REMOVING_BY_MANY_THREAD) {
     }
 
     // assert
-    for (int i = 0; i < iteration_count; i++) {
+    for (int i = 0; i < averageIterationCount; i++) {
         ASSERT_EQ(trie.lookup(i), LOOKUP_NOT_FOUND);
     }
 }
@@ -612,13 +611,13 @@ TEST(TRIE, HAPPY_FLOW___RANDOM_REMOVING_BY_MANY_THREAD) {
 TEST(TRIE, HAPPY_FLOW___INSERTING_THE_SAME_KEY_MANY_TIMES_BY_MANY_THREAD) {
     // arrange
     Trie<int, int> trie;
-    int thread_count = 10;
-    int iteration_count = 100000;
+    int threadCount = 10;
 
-    vector<pthread_t> thread(thread_count);
-    vector<vector<void *>> attr(thread_count);
+
+    vector<pthread_t> thread(threadCount);
+    vector<vector<void *>> attr(threadCount);
     for (int i = 0; i < attr.size(); i++) {
-        attr[i] = {&trie, new int(i), new int(iteration_count)};
+        attr[i] = {&trie, new int(i), new int(averageIterationCount)};
     }
 
     for (int i = 1; i < 100000; i++) {
@@ -629,9 +628,9 @@ TEST(TRIE, HAPPY_FLOW___INSERTING_THE_SAME_KEY_MANY_TIMES_BY_MANY_THREAD) {
         pthread_create(&thread[i], nullptr, [](void *args) -> void * {
             auto *trie = (Trie<int, int> *) (*static_cast<vector<void *> *>(args))[0];
             int *id = (int *) (*static_cast<vector<void *> *>(args))[1];
-            int *iteration_count = (int *) (*static_cast<vector<void *> *>(args))[2];
+            int *averageIterationCount = (int *) (*static_cast<vector<void *> *>(args))[2];
 
-            for (int i = 0; i < *iteration_count; i++) {
+            for (int i = 0; i < *averageIterationCount; i++) {
                 trie->insert(0, *id);
             }
 
