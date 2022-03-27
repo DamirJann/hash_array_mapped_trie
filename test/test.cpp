@@ -11,7 +11,7 @@
 #include <gtest/gtest.h>
 #include <random>
 
-int averageIterationCount = 100'000'000;
+int averageIterationCount = 10000;
 
 TEST(BITMAP, HAPPY_FLOW__IS_SET_TRUE_AT_THE_BEGINNING_OF_BITMAP) {
     // arrange
@@ -352,7 +352,6 @@ TEST(TRIE, HAPPY_FLOW__INSERTING_BY_MANY_THREAD) {
     // assert
     for (int i = 0; i < averageIterationCount * threadCount; i++) {
         ASSERT_EQ(trie.lookup(i), createSuccessfulLookupResult(i));
-        ASSERT_EQ(trie.lookup(i).value, i);
     }
 }
 
