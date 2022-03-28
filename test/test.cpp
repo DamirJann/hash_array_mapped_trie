@@ -151,6 +151,7 @@ TEST(TRIE, HAPPY_FLOW__INSERT_TWO_KEYS_WITH_EQUAL_HASH) {
     trie.insert("k90", 2);
 
     // assert
+
     ASSERT_EQ(trie.lookup("k71"), createSuccessfulLookupResult(1));
     ASSERT_NE(trie.lookup("k90"), LOOKUP_NOT_FOUND);
 }
@@ -279,7 +280,6 @@ TEST(TRIE, HAPPY_FLOW__INSERTING_AND_REMOVING_KEYS_BY_ONE_THREAD) {
     }
 
     for (int i = 0; i < count; i++) {
-        cout << i << endl;
         ASSERT_EQ(trie.lookup(i), createSuccessfulLookupResult(i));
     }
 
