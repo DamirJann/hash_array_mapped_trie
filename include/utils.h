@@ -10,7 +10,7 @@
 
 using namespace std;
 
+uint64_t generateSimpleHash(uint64_t);
 uint64_t generateSimpleHash(string);
-uint64_t generateSimpleHash(int);
 
 uint8_t extractHashPartByLevel(uint64_t hash, uint8_t level);

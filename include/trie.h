@@ -264,12 +264,28 @@ void transformToWithMergedChild(CNode<K, V> *updated, SNode<K, V> *subNode, SNod
 
 template<class K, class V>
 void
-transformToWithDownChild(CNode<K, V> *updated, SNode<K, V> *child2, SNode<K, V> *child3, uint8_t level, uint8_t path) {
-    auto *c2 = new CNode<K, V>();
-    c2->insertChild(child2, extractHashPartByLevel(child2->getHash(), level + 1));
-    c2->insertChild(child3, extractHashPartByLevel(child3->getHash(), level + 1));
-    auto *i2 = new INode<K, V>(c2);
-    updated->replaceChild(i2, path);
+transformToWithDownChild(CNode<K, V> *updated, SNode<K, V> *newChild, SNode<K, V> *oldChild, uint8_t level, uint8_t path) {
+    auto* cur_c = new CNode<K, V>();
+    auto *i = new INode<K, V>(cur_c);
+
+    for (int j = level + 1; j < MAX_LEVEL_COUNT; j++) {
+        uint8_t newChildHs = extractHashPartByLevel(newChild->getHash(), j);
+        uint8_t oldChildHs = extractHashPartByLevel(oldChild->getHash(), j);
+        if (newChildHs != oldChildHs) {
+            cur_c->insertChild(newChild, newChildHs);
+            cur_c->insertChild(oldChild, oldChildHs);
+            break;
+        } else if (j == MAX_LEVEL_COUNT - 1) {
+            newChild->merge(oldChild);
+            cur_c->insertChild(newChild, newChildHs);
+        } else {
+            auto* c = new CNode<K, V>();
+            cur_c->insertChild(new INode<K, V>(c), newChildHs);
+            cur_c = c;
+        }
+    }
+
+    updated->replaceChild(i, path);
 }
 
 template<class K, class V>
@@ -333,7 +349,7 @@ public:
             if (root->main.load() == nullptr) {
                 return REMOVE_NOT_FOUND;
             }
-            RemoveResult res = this->remove(root, nullptr, key, generateSimpleHash(key), 0);
+            RemoveResult res = remove(root, nullptr, key, generateSimpleHash(key), 0);
             if (res != REMOVE_RESTART) {
                 return res;
             }
@@ -406,7 +422,7 @@ private:
         }
 
         if (parent != nullptr) {
-            contractParent(parent, currentNode, extractHashPartByLevel(hash, level - 1));
+//            contractParent(parent, currentNode, extractHashPartByLevel(hash, level - 1));
         }
 
         return res;

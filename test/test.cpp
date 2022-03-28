@@ -142,6 +142,19 @@ TEST(TRIE, HAPPY_FLOW__INSERT_TO_EMPTY_TRIE) {
     ASSERT_EQ(trie.root->main.load()->getSubNode(0), nullptr);
 }
 
+TEST(TRIE, HAPPY_FLOW__INSERT_TWO_KEYS_WITH_EQUAL_HASH) {
+    // arrange
+    Trie<string, int> trie;
+
+    // act
+    trie.insert("k71", 1);
+    trie.insert("k90", 2);
+
+    // assert
+    ASSERT_EQ(trie.lookup("k71"), createSuccessfulLookupResult(1));
+    ASSERT_NE(trie.lookup("k90"), LOOKUP_NOT_FOUND);
+}
+
 TEST(TRIE, HAPPY_FLOW__LOOKUP) {
     // arrange
     Trie<string, int> trie;
@@ -266,6 +279,7 @@ TEST(TRIE, HAPPY_FLOW__INSERTING_AND_REMOVING_KEYS_BY_ONE_THREAD) {
     }
 
     for (int i = 0; i < count; i++) {
+        cout << i << endl;
         ASSERT_EQ(trie.lookup(i), createSuccessfulLookupResult(i));
     }
 
@@ -273,7 +287,6 @@ TEST(TRIE, HAPPY_FLOW__INSERTING_AND_REMOVING_KEYS_BY_ONE_THREAD) {
         ASSERT_EQ(trie.remove(i), createSuccessfulRemoveResult(i));
     }
 
-    // assert
     for (int i = 0; i < count; i++) {
         ASSERT_EQ(trie.lookup(i), LOOKUP_NOT_FOUND);
     }
@@ -312,7 +325,6 @@ TEST(TRIE, HAPPY_FLOW__INSERTING_AND_LOOKING_UP_BY_MANY_THREAD) {
 
     // assert
     for (int i = 0; i < averageIterationCount * threadCount; i++) {
-//        cout << i << endl;
         ASSERT_EQ(trie.lookup(i), createSuccessfulLookupResult(i));
     }
 }
