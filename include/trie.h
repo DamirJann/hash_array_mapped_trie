@@ -89,42 +89,35 @@ public:
     bool isTomb;
 
     CNode() : Node(CNODE) {
-        bmp = {0};
         isTomb = false;
     }
 
-    Node *getSubNode(uint8_t path) {
+    Node *getSubNode(uint8_t path) const {
         if (!bmp.isSet(path)) return nullptr;
-        int index = this->getArrayIndexByBmp(path);
+        int index = getArrayIndexByBmp(path);
         return array[index];
     }
 
-    uint8_t getChildCount() {
-        return this->array.size();
+    uint8_t getChildCount() const {
+        return array.size();
     }
 
-    Node *getFirst() {
-        return this->array.front();
+    Node *getFirst() const {
+        return array.front();
     }
 
-    void insertChild(Node *newChild, uint8_t path) {
-        this->bmp.set(path);
-        this->array.insert(this->array.begin() + this->getArrayIndexByBmp(path), newChild);
-        isTomb = (array.size() == 1 &&
-                  array[0]->type == SNODE);
+    void insertChild( Node *const newChild, uint8_t path) {
+        bmp.set(path);
+        array.insert(array.begin() + getArrayIndexByBmp(path), newChild);
     }
 
-    void replaceChild(Node *newChild, uint8_t path) {
-        this->array[this->getArrayIndexByBmp(path)] = newChild;
-        isTomb = (array.size() == 1 &&
-                  array[0]->type == SNODE);
+    void replaceChild(Node *const newChild, uint8_t path) {
+        array[getArrayIndexByBmp(path)] = newChild;
     }
 
     void deleteChild(uint8_t path) {
         array.erase(array.begin() + getArrayIndexByBmp(path));
         bmp.unset(path);
-        isTomb = (array.size() == 1 &&
-                  array[0]->type == SNODE);
     }
 
     uint8_t getArrayIndexByBmp(uint8_t pos) const {
@@ -134,7 +127,7 @@ public:
     }
 
 private:
-    Bitmap bmp;
+    Bitmap bmp{};
     vector<Node *> array;
 };
 
@@ -282,6 +275,12 @@ void transformToWithDeletedKey(CNode<K, V> *updated, SNode<K, V> *subNode, K key
     }
 }
 
+template<class K, class V>
+bool isTombed(const CNode<K, V> *const c, const INode<K, V> *const root, const INode<K, V> *const parent) {
+    return root != parent &&
+           c->getChildCount() == 1 &&
+           c->getFirst()->type == SNODE;
+}
 
 template<class K, class V>
 void contractParent(INode<K, V> *parent, INode<K, V> *i, uint8_t path) {
@@ -386,14 +385,14 @@ private:
         if (subNode == nullptr) {
             res = REMOVE_NOT_FOUND;
         } else if (subNode->type == SNODE) {
-            if (!static_cast<SNode<K, V> *>(subNode)->contains(key)) {
-                res = REMOVE_NOT_FOUND;
-            } else {
+            if (static_cast<SNode<K, V> *>(subNode)->contains(key)) {
                 V deletedValue = static_cast<SNode<K, V> *>(subNode)->getValue(key);
                 transformToWithDeletedKey(updated, static_cast<SNode<K, V> *>(subNode), key,
                                           extractHashPartByLevel(hash, level));
                 res = (currentNode->main.compare_exchange_strong(old, updated))
                       ? createSuccessfulRemoveResult(deletedValue) : REMOVE_RESTART;
+            } else {
+                res = REMOVE_NOT_FOUND;
             }
         } else if (subNode->type == INODE) {
             res = this->remove(static_cast<INode<K, V> *>(subNode), currentNode, key, hash,
@@ -405,7 +404,7 @@ private:
         }
 
         if (parent != nullptr) {
-            contractParent(parent, currentNode, extractHashPartByLevel(hash, level - 1));
+//            contractParent(parent, currentNode, extractHashPartByLevel(hash, level - 1));
         }
 
         return res;
@@ -420,22 +419,27 @@ private:
 
         if (subNode == nullptr) {
             transformToWithInsertedChild(updated, newNode, path);
+            updated->isTomb = isTombed(updated, root, currentNode);
             return currentNode->main.compare_exchange_strong(old, updated);
         } else if (subNode->type == SNODE) {
             auto *sSubNode = static_cast<SNode<K, V> *>(subNode);
             if (sSubNode->contains(newNode)) {
                 transformToWithReplacedPair(updated, sSubNode, newNode, path);
+                updated->isTomb = isTombed(updated, root, currentNode);
                 return currentNode->main.compare_exchange_strong(old, updated);
             } else if (level == MAX_LEVEL_COUNT) {
                 transformToWithMergedChild(updated, sSubNode, newNode, path);
+                updated->isTomb = isTombed(updated, root, currentNode);
                 return currentNode->main.compare_exchange_strong(old, updated);
             } else {
                 transformToWithDownChild<K, V>(updated, newNode, sSubNode, level, path);
+                updated->isTomb = isTombed(updated, root, currentNode);
                 return currentNode->main.compare_exchange_strong(old, updated);
             }
         } else if (subNode->type == INODE) {
             return insert(static_cast<INode<K, V> *>(subNode), newNode, level + 1);
         } else {
+            fprintf(stderr, "Node with unknown type\n");
             assert(false);
             return false;
         }
