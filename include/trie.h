@@ -307,7 +307,7 @@ void contractParent(INode<K, V> *parent, INode<K, V> *i, uint8_t path) {
         CNode<K, V> *updated = getCopy(old);
         CNode<K, V> *m = i->main.load();
 
-        if (old->getChildCount() == 1) {
+        if (m->getChildCount() == 1) {
             transformToContractedParent(updated, m, path);
             if (parent->main.compare_exchange_strong(old, updated)) {
                 break;
@@ -413,7 +413,7 @@ private:
                       ? createSuccessfulRemoveResult(deletedValue) : REMOVE_RESTART;
             }
         } else if (subNode->type == INODE) {
-            res = this->remove(static_cast<INode<K, V> *>(subNode), static_cast<INode<K, V> *>(subNode), key, hash,
+            res = this->remove(static_cast<INode<K, V> *>(subNode), currentNode, key, hash,
                                level + 1);
         }
 
@@ -422,7 +422,7 @@ private:
         }
 
         if (parent != nullptr) {
-//            contractParent(parent, currentNode, extractHashPartByLevel(hash, level - 1));
+            contractParent(parent, currentNode, extractHashPartByLevel(hash, level - 1));
         }
 
         return res;

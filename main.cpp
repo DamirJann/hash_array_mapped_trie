@@ -9,25 +9,16 @@
 int main(){
     // arrange
     Trie<int , uint64_t> trie;
+    for (int i = 0; i < 10000;i++){
+        trie.insert(i, i);
+    }
+    for (int i = 0; i < 10000;i++){
+        trie.remove(i);
+    }
+
     int thread_count = 1;
     int iteration_count = 100000;
-//    for (int i = 0 ; i < 300; i++){
-//        string key = "k"  + to_string(i);
-//        trie.insert(key, i);
-//    }
-//    for (int i = 0 ; i < 300; i++){
-//        string key = "k"  + to_string(i);
-//        trie.remove(key);
-//    }
 
-    for (int i = 0; i < 32; i++){
-        trie.insert(i, i);
-    }
-    for (int i = 32; i < 40; i++){
-        trie.insert(i, i);
-    }
-
-    cout << trie.lookup(32).value;
 //    vector<pthread_t> thread(thread_count);
 //    vector<vector<void *>> attr(thread_count);
 //    for (int i = 0; i < attr.size(); i++) {

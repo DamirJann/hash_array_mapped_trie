@@ -153,7 +153,32 @@ TEST(TRIE, HAPPY_FLOW__INSERT_TWO_KEYS_WITH_EQUAL_HASH) {
     // assert
 
     ASSERT_EQ(trie.lookup("k71"), createSuccessfulLookupResult(1));
-    ASSERT_NE(trie.lookup("k90"), LOOKUP_NOT_FOUND);
+    ASSERT_EQ(trie.lookup("k90"),  createSuccessfulLookupResult(2));
+}
+
+TEST(TRIE, HAPPY_FLOW__CONTRACTED_CHECK_WITH_THREE_KEYS) {
+    // arrange
+    Trie<int, int> trie;
+
+    // act
+    trie.insert(0b00000, 1);
+    trie.insert(0b00001, 2);
+    trie.insert(0b100001, 3);
+    trie.remove(0b100001);
+
+
+    // assert
+    ASSERT_EQ(trie.root->main.load()->array[0]->type, SNODE);
+    ASSERT_EQ(trie.root->main.load()->getChildCount(), 2);
+    ASSERT_EQ(trie.root->main.load()->array[1]->type, SNODE);
+}
+
+TEST(TRIE, HAPPY_FLOW__CONTRACTED_CHECK_WITH_MANY_KEYS) {
+    // arrange
+
+    // act
+
+    // assert
 }
 
 TEST(TRIE, HAPPY_FLOW__LOOKUP) {
