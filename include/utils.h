@@ -10,7 +10,18 @@
 
 using namespace std;
 
+struct Bitmap {
+    uint32_t data;
+
+    bool isSet(uint8_t pos) const;
+
+    void set(uint8_t pos);
+
+    void unset(uint8_t pos);
+};
+
 uint64_t generateSimpleHash(uint64_t);
+
 uint64_t generateSimpleHash(string);
 
 uint8_t extractHashPartByLevel(uint64_t hash, uint8_t level);

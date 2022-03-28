@@ -11,21 +11,6 @@
 using namespace std;
 
 
-struct bitmap {
-    uint32_t data;
-
-    bool isSet(uint8_t pos) const {
-        return (this->data >> pos) % 2;
-    }
-
-    void set(uint8_t pos) {
-        this->data = this->data | (1 << pos);
-    }
-
-    void unset(uint8_t pos) {
-        this->data = this->data & (~(1 << pos));
-    }
-};
 
 enum NodeType {
     CNODE,
@@ -43,15 +28,6 @@ protected:
     }
 };
 
-template<class K, class V>
-struct Pair {
-    K key;
-    V value;
-
-    bool operator<(const Pair &p) const {
-        return this->key < p.key;
-    }
-};
 
 template<class K, class V>
 class SNode : public Node {
@@ -93,41 +69,28 @@ public:
         return 0;
     }
 
+    struct Pair {
+        K key;
+        V value;
 
-    void merge(SNode<K, V> *node) {
-        for (auto &p: node->pair) {
-            this->pair.insert(p);
+        bool operator<(const Pair &p) const {
+            return this->key < p.key;
         }
-    }
+    };
 
 public:
     uint64_t hash{};
-    set<Pair<K, V>> pair;
+    set<Pair> pair;
 };
-
-template<class K, class V>
-SNode<K, V> *leftMerge(SNode<K, V> *node1, SNode<K, V> *node2) {
-    auto *merged = new SNode<K, V>(*node1);
-    for (auto &p: node2->pair) {
-        if (!merged->contains(p.key)) {
-            merged->pair.insert(p);
-        }
-    }
-    return merged;
-}
-
-template<class K, class V>
-SNode<K, V> *createSNode(K &k, V v, uint64_t hash) {
-    return new SNode<K, V>(k, v, hash);
-}
 
 template<class K, class V>
 class CNode : public Node {
 public:
-    friend class TestCNode;
+    bool isTomb;
 
     CNode() : Node(CNODE) {
         bmp = {0};
+        isTomb = false;
     }
 
     Node *getSubNode(uint8_t path) {
@@ -147,27 +110,32 @@ public:
     void insertChild(Node *newChild, uint8_t path) {
         this->bmp.set(path);
         this->array.insert(this->array.begin() + this->getArrayIndexByBmp(path), newChild);
+        isTomb = (array.size() == 1 &&
+                  array[0]->type == SNODE);
     }
 
     void replaceChild(Node *newChild, uint8_t path) {
         this->array[this->getArrayIndexByBmp(path)] = newChild;
+        isTomb = (array.size() == 1 &&
+                  array[0]->type == SNODE);
     }
 
     void deleteChild(uint8_t path) {
         array.erase(array.begin() + getArrayIndexByBmp(path));
         bmp.unset(path);
+        isTomb = (array.size() == 1 &&
+                  array[0]->type == SNODE);
     }
-
-
-private:
-    bitmap bmp;
-    vector<Node *> array;
 
     uint8_t getArrayIndexByBmp(uint8_t pos) const {
         return __builtin_popcount(
                 ((1 << pos) - 1) & bmp.data
         );
     }
+
+private:
+    Bitmap bmp;
+    vector<Node *> array;
 };
 
 
@@ -182,7 +150,6 @@ public:
 
     atomic<CNode<K, V> *> main;
 };
-
 
 struct LookupResult {
     enum LookupResultStatus {
@@ -243,6 +210,17 @@ RemoveResult createSuccessfulRemoveResult(int value) {
 }
 
 template<class K, class V>
+SNode<K, V> *leftMerge(SNode<K, V> *node1, SNode<K, V> *node2) {
+    auto *merged = new SNode<K, V>(*node1);
+    for (auto &p: node2->pair) {
+        if (!merged->contains(p.key)) {
+            merged->pair.insert(p);
+        }
+    }
+    return merged;
+}
+
+template<class K, class V>
 CNode<K, V> *getCopy(CNode<K, V> *node) {
     return new CNode<K, V>(*node);
 }
@@ -258,14 +236,19 @@ void transformToWithReplacedPair(CNode<K, V> *updated, SNode<K, V> *subNode, SNo
 }
 
 template<class K, class V>
+void transformToWithInsertedChild(CNode<K, V> *updated, Node *child, uint8_t path) {
+    updated->insertChild(child, path);
+}
+
+template<class K, class V>
 void transformToWithMergedChild(CNode<K, V> *updated, SNode<K, V> *subNode, SNode<K, V> *newNode, uint8_t path) {
     updated->replaceChild(leftMerge(newNode, subNode), path);
 }
 
 template<class K, class V>
-void
-transformToWithDownChild(CNode<K, V> *updated, SNode<K, V> *newChild, SNode<K, V> *oldChild, uint8_t level, uint8_t path) {
-    auto* cur_c = new CNode<K, V>();
+void transformToWithDownChild(CNode<K, V> *updated, SNode<K, V> *newChild, SNode<K, V> *oldChild, uint8_t level,
+                              uint8_t path) {
+    auto *cur_c = new CNode<K, V>();
     auto *i = new INode<K, V>(cur_c);
 
     for (int j = level + 1; j < MAX_LEVEL_COUNT; j++) {
@@ -276,10 +259,10 @@ transformToWithDownChild(CNode<K, V> *updated, SNode<K, V> *newChild, SNode<K, V
             cur_c->insertChild(oldChild, oldChildHs);
             break;
         } else if (j == MAX_LEVEL_COUNT - 1) {
-            newChild->merge(oldChild);
+            newChild = leftMerge(newChild, oldChild);
             cur_c->insertChild(newChild, newChildHs);
         } else {
-            auto* c = new CNode<K, V>();
+            auto *c = new CNode<K, V>();
             cur_c->insertChild(new INode<K, V>(c), newChildHs);
             cur_c = c;
         }
@@ -436,7 +419,7 @@ private:
         Node *subNode = updated->getSubNode(path);
 
         if (subNode == nullptr) {
-            updated->insertChild(newNode, path);
+            transformToWithInsertedChild(updated, newNode, path);
             return currentNode->main.compare_exchange_strong(old, updated);
         } else if (subNode->type == SNODE) {
             auto *sSubNode = static_cast<SNode<K, V> *>(subNode);

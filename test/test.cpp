@@ -15,13 +15,13 @@ int averageIterationCount = 50000;
 
 TEST(BITMAP, HAPPY_FLOW__IS_SET_TRUE_AT_THE_BEGINNING_OF_BITMAP) {
     // arrange
-    bitmap bmp = {0b1110010011};
+    Bitmap bmp = {0b1110010011};
     ASSERT_EQ(bmp.isSet(0), true);
 }
 
 TEST(BITMAP, HAPPY_FLOW__IS_SET_FALSE_AT_THE_BEGINNING_OF_BITMAP) {
     // arrange
-    bitmap bmp = {0b1110010010};
+    Bitmap bmp = {0b1110010010};
 
     // act & assert
     ASSERT_EQ(bmp.isSet(0), false);
@@ -29,7 +29,7 @@ TEST(BITMAP, HAPPY_FLOW__IS_SET_FALSE_AT_THE_BEGINNING_OF_BITMAP) {
 
 TEST(BITMAP, HAPPY_FLOW__IS_SET_TRUE_AT_THE_MIDDLE_OF_BITMAP) {
     // arrange
-    bitmap bmp = {0b1110010011};
+    Bitmap bmp = {0b1110010011};
 
     // act & assert
     ASSERT_EQ(bmp.isSet(4), true);
@@ -37,7 +37,7 @@ TEST(BITMAP, HAPPY_FLOW__IS_SET_TRUE_AT_THE_MIDDLE_OF_BITMAP) {
 
 TEST(BITMAP, HAPPY_FLOW__IS_SET_FALSE_AT_THE_MIDDLE_OF_BITMAP) {
     // arrange
-    bitmap bmp = {0b1110010010};
+    Bitmap bmp = {0b1110010010};
 
     // act & assert
     ASSERT_EQ(bmp.isSet(3), false);
@@ -45,7 +45,7 @@ TEST(BITMAP, HAPPY_FLOW__IS_SET_FALSE_AT_THE_MIDDLE_OF_BITMAP) {
 
 TEST(BITMAP, HAPPY_FLOW__IS_SET_TRUE_AT_THE_END_OF_BITMAP) {
     // arrange
-    bitmap bmp = {0x80000000};
+    Bitmap bmp = {0x80000000};
 
     // act & assert
     ASSERT_EQ(bmp.isSet(31), true);
@@ -53,7 +53,7 @@ TEST(BITMAP, HAPPY_FLOW__IS_SET_TRUE_AT_THE_END_OF_BITMAP) {
 
 TEST(BITMAP, HAPPY_FLOW__IS_SET_FALSE_AT_THE_END_OF_BITMAP) {
     // arrange
-    bitmap bmp = {0};
+    Bitmap bmp = {0};
 
     // act & assert
     ASSERT_EQ(bmp.isSet(31), false);
@@ -61,46 +61,46 @@ TEST(BITMAP, HAPPY_FLOW__IS_SET_FALSE_AT_THE_END_OF_BITMAP) {
 
 TEST(BITMAP, HAPPY_FLOW__SET_AT_FALSE) {
     // arrange
-    bitmap bmp = {0b1001};
+    Bitmap bmp = {0b1001};
 
     // act
     bmp.set(2);
 
     // assert
-    ASSERT_EQ(bmp.data, (bitmap) {0b1101}.data);
+    ASSERT_EQ(bmp.data, (Bitmap) {0b1101}.data);
 }
 
 TEST(BITMAP, HAPPY_FLOW__SET_AT_TRUE) {
     // arrange
-    bitmap bmp = {0b1001};
+    Bitmap bmp = {0b1001};
 
     // act
     bmp.set(3);
 
     // assert
-    ASSERT_EQ(bmp.data, (bitmap) {0b1001}.data);
+    ASSERT_EQ(bmp.data, (Bitmap) {0b1001}.data);
 }
 
 TEST(BITMAP, HAPPY_FLOW__UNSET_AT_TRUE) {
     // arrange
-    bitmap bmp = {0b10101};
+    Bitmap bmp = {0b10101};
 
     // act
     bmp.unset(2);
 
     // assert
-    ASSERT_EQ(bmp.data, (bitmap) {0b10001}.data);
+    ASSERT_EQ(bmp.data, (Bitmap) {0b10001}.data);
 }
 
 TEST(BITMAP, HAPPY_FLOW__UNSET_AT_FALSE) {
     // arrange
-    bitmap bmp = {0b10101};
+    Bitmap bmp = {0b10101};
 
     // act
     bmp.unset(3);
 
     // assert
-    ASSERT_EQ(bmp.data, (bitmap) {0b10101}.data);
+    ASSERT_EQ(bmp.data, (Bitmap) {0b10101}.data);
 }
 
 TEST(CNode, HAPPY_FLOW__GET_COPY) {

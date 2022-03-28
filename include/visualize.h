@@ -15,11 +15,11 @@ int counter = 0;
 const int MAX_EDGE_COUNT = 10000;
 const int MAX_HEIGHT_COUNT = 10000;
 
-string toString(int k){
+string toString(int k) {
     return to_string(k);
 }
 
-string toString(string k){
+string toString(string k) {
     return k;
 }
 
@@ -38,8 +38,13 @@ struct Height {
             case INODE: {
                 return "I" + to_string(id);
             }
-            case CNODE:
-                return "C" + to_string(id);
+            case CNODE: {
+                string label = "C" + to_string(id);
+                if (static_cast<CNode<K, V> *>(v)->isTomb) {
+                    label += " - tombed";
+                }
+                return label;
+            }
             case SNODE: {
                 string label = "";
                 label += "hs: " + to_string(static_cast<SNode<K, V> *>(this->v)->getHash()) + "\n\n";
@@ -70,7 +75,7 @@ void walk_and_collect(Height<K, V> currHeight, vector<Height<K, V>> &hs, vector<
         es.push_back({"", currHeight.id, c.id});
 
         for (uint8_t path = 0b00000; path < 0b100000; path++) {
-            CNode<K, V> *n = reinterpret_cast<CNode<K, V> *>(c.v);
+            auto *n = reinterpret_cast<CNode<K, V> *>(c.v);
             if (n->getSubNode(path) != nullptr) {
                 Height<K, V> child(n->getSubNode(path));
                 hs.push_back(child);

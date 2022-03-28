@@ -8,12 +8,10 @@
 
 int main(){
     // arrange
-    Trie<int , uint64_t> trie;
-    for (int i = 0; i < 10000;i++){
-        trie.insert(i, i);
-    }
-    for (int i = 0; i < 10000;i++){
-        trie.remove(i);
+    Trie<string , uint64_t> trie;
+    for (int i = 0; i < 300;i++){
+        string key = "k" + to_string(i);
+        trie.insert(key, i);
     }
 
     int thread_count = 1;
