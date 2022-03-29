@@ -17,13 +17,13 @@ uint8_t extractHashPartByLevel(uint64_t hash, uint8_t level) {
 }
 
 bool Bitmap::isSet(uint8_t pos) const {
-    return (this->data >> pos) % 2;
+    return (data >> pos) % 2;
 }
 
 void Bitmap::set(uint8_t pos) {
-    this->data = this->data | (1 << pos);
+    data = data | (1 << pos);
 }
 
 void Bitmap::unset(uint8_t pos) {
-    this->data = this->data & (~(1 << pos));
+    data = data & (~(1 << pos));
 }

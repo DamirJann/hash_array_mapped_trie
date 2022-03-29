@@ -160,14 +160,14 @@ TEST(TRIE, HAPPY_FLOW__CONTRACTED_CHECK_WITH_THREE_KEYS) {
     // arrange
     Trie<int, int> trie;
 
-    // act
+    // act & act
     trie.insert(0b00000, 1);
     trie.insert(0b00001, 2);
     trie.insert(0b100001, 3);
+    ASSERT_EQ(trie.root->main.load()->getChildCount(), 2);
     trie.remove(0b100001);
 
 
-    // assert
     ASSERT_EQ(trie.root->main.load()->array[0]->type, SNODE);
     ASSERT_EQ(trie.root->main.load()->getChildCount(), 2);
     ASSERT_EQ(trie.root->main.load()->array[1]->type, SNODE);
@@ -598,7 +598,7 @@ TEST(TRIE, HAPPY_FLOW__KEY_RANDOM_ACTIONS_BY_MANY_THREAD) {
 }
 
 
-TEST(TRIE, HAPPY_FLOW___RANDOM_REMOVING_BY_MANY_THREAD) {
+TEST(TRIE, HAPPY_FLOW__RANDOM_REMOVING_BY_MANY_THREAD) {
     // arrange
     Trie<int, int> trie;
     int threadCount = 10;
@@ -644,7 +644,7 @@ TEST(TRIE, HAPPY_FLOW___RANDOM_REMOVING_BY_MANY_THREAD) {
 }
 
 
-TEST(TRIE, HAPPY_FLOW___INSERTING_THE_SAME_KEY_MANY_TIMES_BY_MANY_THREAD) {
+TEST(TRIE, HAPPY_FLOW__INSERTING_THE_SAME_KEY_MANY_TIMES_BY_MANY_THREAD) {
     // arrange
     Trie<int, int> trie;
     int threadCount = 10;
