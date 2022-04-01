@@ -17,7 +17,7 @@ uint8_t extractHashPartByLevel(uint64_t hash, uint8_t level) {
 }
 
 bool Bitmap::isSet(uint8_t pos) const {
-    return (data >> pos) % 2;
+    return ((data >> pos) & 0b1) == 1;
 }
 
 void Bitmap::set(uint8_t pos) {

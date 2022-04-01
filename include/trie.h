@@ -320,7 +320,7 @@ private:
     INode<K, V> *root;
 public:
     Trie() {
-        root = new INode<K, V>();
+        root = new INode<K, V>(nullptr);
     }
 
     Node *getRoot() {
@@ -376,10 +376,10 @@ private:
     LookupResult lookup(INode<K, V> *currentNode, INode<K, V> *parent, K key, uint64_t hash, uint8_t level) {
         CNode<K, V>* m = currentNode->main.load();
 
-        if (m->isTomb){
-            clean(parent);
-            return LOOKUP_RESTART;
-        }
+//        if (m->isTomb){
+//            clean(parent);
+//            return LOOKUP_RESTART;
+//        }
 
         Node *nextNode = m->getSubNode(extractHashPartByLevel(hash, level));
         if (nextNode == nullptr) {
@@ -397,10 +397,10 @@ private:
     RemoveResult remove(INode<K, V> *currentNode, INode<K, V> *parent, K key, uint64_t hash, uint8_t level) {
         CNode<K, V> *old = currentNode->main.load();
 
-        if (old->isTomb) {
-            contractParent(parent, currentNode, extractHashPartByLevel(hash, level));
-            return REMOVE_RESTART;
-        }
+//        if (old->isTomb) {
+//            contractParent(parent, currentNode, extractHashPartByLevel(hash, level));
+//            return REMOVE_RESTART;
+//        }
 
         CNode<K, V> *updated = getCopy(old);
         uint8_t path = extractHashPartByLevel(hash, level);
@@ -429,9 +429,9 @@ private:
             return res;
         }
 
-        if (updated->isTomb) {
-            contractParent(parent, currentNode, extractHashPartByLevel(hash, level - 1));
-        }
+//        if (updated->isTomb) {
+//            contractParent(parent, currentNode, extractHashPartByLevel(hash, level - 1));
+//        }
 
         return res;
     }
@@ -439,10 +439,10 @@ private:
     bool insert(INode<K, V> *currentNode, INode<K, V> *parent, SNode<K, V> *newNode, uint8_t level) {
         CNode<K, V> *old = currentNode->main.load();
 
-        if (old->isTomb) {
-            clean(parent);
-            return false;
-        }
+//        if (old->isTomb) {
+//            clean(parent);
+//            return false;
+//        }
 
         CNode<K, V> *updated = getCopy(old);
         uint8_t path = extractHashPartByLevel(newNode->getHash(), level);
@@ -477,3 +477,19 @@ private:
     }
 };
 
+
+///  k -> hc
+///  3         2    1      0
+///  10001 11111 10101 11111 ... 64 bits
+// path = 21 -> flag       10000000000000000000 ... (21)
+// 0x1  0001010101010 0x2
+
+
+/// hc >> (w * lev)
+/// flag is a path or (1 << path)
+/// pos
+//#((1 << path ) - 1 * bpm)
+/// 10000000000100000 - 32 bit
+
+///
+/// TODO null-node
