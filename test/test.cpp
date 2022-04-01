@@ -103,6 +103,16 @@ TEST(BITMAP, HAPPY_FLOW__UNSET_AT_FALSE) {
     ASSERT_EQ(bmp.data, (Bitmap) {0b10101}.data);
 }
 
+TEST(BITMAP, HAPPY_FLOW__EXTRACT_HASH_PART) {
+    // arrange
+    uint64_t hash = 0b11111'00000'01001;
+
+    // act & assert
+    ASSERT_EQ(extractHashPartByLevel(hash, 0), 0b01001);
+    ASSERT_EQ(extractHashPartByLevel(hash, 1), 0b00000);
+    ASSERT_EQ(extractHashPartByLevel(hash, 2), 0b11111);
+}
+
 TEST(CNode, HAPPY_FLOW__GET_COPY) {
     // arrange
 
@@ -601,7 +611,7 @@ TEST(TRIE, HAPPY_FLOW__KEY_RANDOM_ACTIONS_BY_MANY_THREAD) {
 TEST(TRIE, HAPPY_FLOW__RANDOM_REMOVING_BY_MANY_THREAD) {
     // arrange
     Trie<int, int> trie;
-    int threadCount = 10;
+    int threadCount = 5;
 
 
     vector<pthread_t> thread(threadCount);

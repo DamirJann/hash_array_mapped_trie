@@ -66,6 +66,7 @@ public:
                 return p.value;
             }
         }
+        // TODO ???
         return 0;
     }
 
@@ -184,9 +185,9 @@ struct RemoveResult {
     Status status;
 
     bool operator==(RemoveResult rightOperand) const {
-        if ((this->status == NotFound) && (rightOperand.status == NotFound)) return true;
-        if ((this->status == Failed) && (rightOperand.status == Failed)) return true;
-        if ((this->status == Removed) && (rightOperand.status == Removed)) return this->value == rightOperand.value;
+        if ((status == NotFound) && (rightOperand.status == NotFound)) return true;
+        if ((status == Failed) && (rightOperand.status == Failed)) return true;
+        if ((status == Removed) && (rightOperand.status == Removed)) return value == rightOperand.value;
         return false;
     }
 
@@ -287,31 +288,26 @@ template<class K, class V>
 bool isTombed(const CNode<K, V> *const c, const INode<K, V> *const root, const INode<K, V> *const parent) {
     return root != parent &&
            c->getChildCount() == 1 &&
-            c->getFirstChild()->type == SNODE;
+           c->getFirstChild()->type == SNODE;
 }
 
 template<class K, class V>
-void contractParent(INode<K, V> *parent, INode<K, V> *i, uint8_t path) {
+void contractParent(INode<K, V> *parent, INode<K, V> *i, uint8_t level, uint64_t hash) {
     while (true) {
-        CNode<K, V> *old = parent->main.load();
-        CNode<K, V> *updated = getCopy(old);
+        CNode<K, V> *pm = parent->main.load();
+        CNode<K, V> *updated = getCopy(pm);
         CNode<K, V> *m = i->main.load();
 
-        if (m->getChildCount() == 1) {
-            transformToContractedParent(updated, m, path);
-            if (parent->main.compare_exchange_strong(old, updated)) {
-                break;
-            }
-        } else {
+        Node *sub = pm->getSubNode(extractHashPartByLevel(hash, level - 1));
+        if (sub != i || !m->isTomb) break;
+
+        transformToContractedParent(updated, m, extractHashPartByLevel(hash, level - 1));
+        if (parent->main.compare_exchange_strong(pm, updated)) {
             break;
         }
     }
 }
 
-template<class K, class V>
-void clean(INode<K, V>* parent) {
-
-}
 
 template<class K, class V>
 class Trie {
@@ -373,12 +369,11 @@ public:
 
 private:
     LookupResult lookup(INode<K, V> *currentNode, INode<K, V> *parent, K key, uint64_t hash, uint8_t level) {
-        CNode<K, V>* m = currentNode->main.load();
+        CNode<K, V> *m = currentNode->main.load();
 
-//        if (m->isTomb){
-//            clean(parent);
-//            return LOOKUP_RESTART;
-//        }
+        if (parent != nullptr) {
+            contractParent(parent, currentNode, level, hash);
+        }
 
         Node *nextNode = m->getSubNode(extractHashPartByLevel(hash, level));
         if (nextNode == nullptr) {
@@ -395,13 +390,12 @@ private:
 
     RemoveResult remove(INode<K, V> *currentNode, INode<K, V> *parent, K key, uint64_t hash, uint8_t level) {
         CNode<K, V> *old = currentNode->main.load();
-
-//        if (old->isTomb) {
-//            contractParent(parent, currentNode, extractHashPartByLevel(hash, level));
-//            return REMOVE_RESTART;
-//        }
-
         CNode<K, V> *updated = getCopy(old);
+
+        if (parent != nullptr) {
+            contractParent(parent, currentNode, level, hash);
+        }
+
         uint8_t path = extractHashPartByLevel(hash, level);
         Node *subNode = updated->getSubNode(path);
 
@@ -428,20 +422,18 @@ private:
             return res;
         }
 
-//        if (updated->isTomb) {
-//            contractParent(parent, currentNode, extractHashPartByLevel(hash, level - 1));
-//        }
-
+        if (parent != nullptr) {
+            contractParent(parent, currentNode, level, hash);
+        }
         return res;
     }
 
     bool insert(INode<K, V> *currentNode, INode<K, V> *parent, SNode<K, V> *newNode, uint8_t level) {
         CNode<K, V> *old = currentNode->main.load();
 
-//        if (old->isTomb) {
-//            clean(parent);
-//            return false;
-//        }
+        if (parent != nullptr) {
+            contractParent(parent, currentNode, level, newNode->getHash());
+        }
 
         CNode<K, V> *updated = getCopy(old);
         uint8_t path = extractHashPartByLevel(newNode->getHash(), level);
@@ -475,20 +467,3 @@ private:
         }
     }
 };
-
-
-///  k -> hc
-///  3         2    1      0
-///  10001 11111 10101 11111 ... 64 bits
-// path = 21 -> flag       10000000000000000000 ... (21)
-// 0x1  0001010101010 0x2
-
-
-/// hc >> (w * lev)
-/// flag is a path or (1 << path)
-/// pos
-//#((1 << path ) - 1 * bpm)
-/// 10000000000100000 - 32 bit
-
-///
-/// TODO null-node
