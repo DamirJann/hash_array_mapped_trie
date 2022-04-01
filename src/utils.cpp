@@ -13,11 +13,11 @@ uint64_t generateSimpleHash(string key) {
 }
 
 uint8_t extractHashPartByLevel(uint64_t hash, uint8_t level) {
-    return (hash >> (level * HASH_PIECE_LEN)) % BRANCH_FACTOR;
+    return (hash >> (level * HASH_PIECE_LEN)) & ((1 << HASH_PIECE_LEN) - 1);
 }
 
 bool Bitmap::isSet(uint8_t pos) const {
-    return ((data >> pos) & 0b1) == 1;
+    return ((data >> pos) & 0b1) == 0b1;
 }
 
 void Bitmap::set(uint8_t pos) {

@@ -99,11 +99,10 @@ public:
     }
 
     uint8_t getChildCount() const {
-        // TODO change to bit operation
-        return array.size();
+        return __builtin_popcount(bmp.data);
     }
 
-    Node *getFirst() const {
+    Node *getFirstChild() const {
         return array.front();
     }
 
@@ -221,7 +220,7 @@ CNode<K, V> *getCopy(CNode<K, V> *node) {
 
 template<class K, class V>
 void transformToContractedParent(CNode<K, V> *updated, CNode<K, V> *m, uint8_t path) {
-    updated->replaceChild(m->getFirst(), path);
+    updated->replaceChild(m->getFirstChild(), path);
 }
 
 template<class K, class V>
@@ -288,7 +287,7 @@ template<class K, class V>
 bool isTombed(const CNode<K, V> *const c, const INode<K, V> *const root, const INode<K, V> *const parent) {
     return root != parent &&
            c->getChildCount() == 1 &&
-           c->getFirst()->type == SNODE;
+            c->getFirstChild()->type == SNODE;
 }
 
 template<class K, class V>
