@@ -292,20 +292,14 @@ bool isTombed(const CNode<K, V> *const c, const INode<K, V> *const root, const I
 }
 
 template<class K, class V>
-void contractParent(INode<K, V> *parent, INode<K, V> *i, uint8_t level, uint64_t hash) {
-    while (true) {
-        CNode<K, V> *pm = parent->main.load();
-        CNode<K, V> *updated = getCopy(pm);
-        CNode<K, V> *m = i->main.load();
+bool contractParent(INode<K, V> *parent, CNode<K, V>* pm,  CNode<K, V>* m, uint8_t level, uint64_t hash) {
+    if (!m->isTomb) return false;
 
-        Node *sub = pm->getSubNode(extractHashPartByLevel(hash, level - 1));
-        if (sub != i || !m->isTomb) break;
+    CNode<K, V> *updated = getCopy(pm);
 
-        transformToContractedParent(updated, m, extractHashPartByLevel(hash, level - 1));
-        if (parent->main.compare_exchange_strong(pm, updated)) {
-            break;
-        }
-    }
+    transformToContractedParent(updated, m, extractHashPartByLevel(hash, level - 1));
+    parent->main.compare_exchange_strong(pm, updated);
+    return true;
 }
 
 
@@ -369,10 +363,11 @@ public:
 
 private:
     LookupResult lookup(INode<K, V> *currentNode, INode<K, V> *parent, K key, uint64_t hash, uint8_t level) {
+        CNode<K, V> *pm = parent ? parent->main.load() : nullptr;
         CNode<K, V> *m = currentNode->main.load();
 
-        if (parent != nullptr) {
-            contractParent(parent, currentNode, level, hash);
+        if (contractParent(parent, pm, m, level, hash)){
+            return LOOKUP_RESTART;
         }
 
         Node *nextNode = m->getSubNode(extractHashPartByLevel(hash, level));
@@ -389,13 +384,14 @@ private:
     }
 
     RemoveResult remove(INode<K, V> *currentNode, INode<K, V> *parent, K key, uint64_t hash, uint8_t level) {
-        CNode<K, V> *old = currentNode->main.load();
-        CNode<K, V> *updated = getCopy(old);
+        CNode<K, V> *pm = parent ? parent->main.load() : nullptr;
+        CNode<K, V> *m = currentNode->main.load();
 
-        if (parent != nullptr) {
-            contractParent(parent, currentNode, level, hash);
+        if (contractParent(parent, pm, m, level, hash)){
+            return REMOVE_RESTART;
         }
 
+        CNode<K, V> *updated = getCopy(m);
         uint8_t path = extractHashPartByLevel(hash, level);
         Node *subNode = updated->getSubNode(path);
 
@@ -409,7 +405,7 @@ private:
                 transformToWithDeletedKey(updated, static_cast<SNode<K, V> *>(subNode), key,
                                           extractHashPartByLevel(hash, level));
                 updated->isTomb = isTombed(updated, root, currentNode);
-                res = (currentNode->main.compare_exchange_strong(old, updated))
+                res = (currentNode->main.compare_exchange_strong(m, updated))
                       ? createSuccessfulRemoveResult(delVal) : REMOVE_RESTART;
             } else {
                 res = REMOVE_NOT_FOUND;
@@ -422,41 +418,43 @@ private:
             return res;
         }
 
-        if (parent != nullptr) {
-            contractParent(parent, currentNode, level, hash);
-        }
+        // TODO think
+//        contractParent(parent, pm, m, level, hash);
+
         return res;
     }
 
     bool insert(INode<K, V> *currentNode, INode<K, V> *parent, SNode<K, V> *newNode, uint8_t level) {
-        CNode<K, V> *old = currentNode->main.load();
+        CNode<K, V> *pm = parent ? parent->main.load() : nullptr;
+        CNode<K, V> *m = currentNode->main.load();
 
-        if (parent != nullptr) {
-            contractParent(parent, currentNode, level, newNode->getHash());
+        if (contractParent(parent, pm, m, level, newNode->getHash())){
+            return false;
         }
 
-        CNode<K, V> *updated = getCopy(old);
+
+        CNode<K, V> *updated = getCopy(m);
         uint8_t path = extractHashPartByLevel(newNode->getHash(), level);
 
         Node *subNode = updated->getSubNode(path);
         if (subNode == nullptr) {
             transformToWithInsertedChild(updated, newNode, path);
             updated->isTomb = isTombed(updated, root, currentNode);
-            return currentNode->main.compare_exchange_strong(old, updated);
+            return currentNode->main.compare_exchange_strong(m, updated);
         } else if (subNode->type == SNODE) {
             auto *s = static_cast<SNode<K, V> *>(subNode);
             if (s->contains(newNode)) {
                 transformToWithReplacedPair(updated, s, newNode, path);
                 updated->isTomb = isTombed(updated, root, currentNode);
-                return currentNode->main.compare_exchange_strong(old, updated);
+                return currentNode->main.compare_exchange_strong(m, updated);
             } else if (level == MAX_LEVEL_COUNT) {
                 transformToWithMergedChild(updated, s, newNode, path);
                 updated->isTomb = isTombed(updated, root, currentNode);
-                return currentNode->main.compare_exchange_strong(old, updated);
+                return currentNode->main.compare_exchange_strong(m, updated);
             } else {
                 transformToWithDownChild<K, V>(updated, newNode, s, level, path);
                 updated->isTomb = isTombed(updated, root, currentNode);
-                return currentNode->main.compare_exchange_strong(old, updated);
+                return currentNode->main.compare_exchange_strong(m, updated);
             }
         } else if (subNode->type == INODE) {
             return insert(static_cast<INode<K, V> *>(subNode), currentNode, newNode, level + 1);
