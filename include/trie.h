@@ -145,8 +145,8 @@ public:
 };
 
 
-struct InsertResult{
-    enum class Status{
+struct InsertResult {
+    enum class Status {
         Inserted,
         Failed
     };
@@ -249,29 +249,35 @@ void transformToContractedParent(CNode<K, V> *updated, CNode<K, V> *m, uint8_t p
 }
 
 template<class K, class V>
-void transformToWithReplacedPair(CNode<K, V> *updated, SNode<K, V> *subNode, SNode<K, V> *newNode, uint8_t path) {
+CNode<K, V> *buildToWithReplacedPair(CNode<K, V> *org, SNode<K, V> *subNode, SNode<K, V> *newNode, uint8_t path) {
+    CNode<K, V> *updated = getCopy(org);
     updated->replaceChild(leftMerge(newNode, subNode), path);
+    return updated;
 }
 
 template<class K, class V>
-void transformToWithInsertedChild(CNode<K, V> *updated, Node *child, uint8_t path) {
+CNode<K, V> *buildWithInsertedChild(CNode<K, V> *org, Node *child, uint8_t path) {
+    CNode<K, V> *updated = getCopy(org);
     updated->insertChild(child, path);
+    return updated;
 }
 
 template<class K, class V>
-void transformToWithMergedChild(CNode<K, V> *updated, SNode<K, V> *subNode, SNode<K, V> *newNode, uint8_t path) {
+CNode<K, V> *buildWithMergedChild(CNode<K, V> *org, SNode<K, V> *subNode, SNode<K, V> *newNode, uint8_t path) {
+    CNode<K, V> *updated = getCopy(org);
     updated->replaceChild(leftMerge(newNode, subNode), path);
+    return updated;
 }
 
 template<class K, class V>
-void transformToWithDownChild(CNode<K, V> *updated, SNode<K, V> *newChild, SNode<K, V> *oldChild, uint8_t level,
-                              uint8_t path) {
+CNode<K, V> *buildWithDownChild(CNode<K, V> *org, SNode<K, V> *newChild, SNode<K, V> *oldChild, uint8_t level,
+                                uint8_t path) {
+    CNode<K, V> *updated = getCopy(org);
 
     if (newChild->getHash() == oldChild->getHash()) {
         newChild = leftMerge(newChild, oldChild);
         updated->replaceChild(newChild, path);
     } else {
-
         auto *cur_c = new CNode<K, V>();
         auto *i = new INode<K, V>(cur_c);
 
@@ -286,19 +292,18 @@ void transformToWithDownChild(CNode<K, V> *updated, SNode<K, V> *newChild, SNode
             j++;
             newChildHashPath = extractHashPartByLevel(newChild->getHash(), j);
             oldChildHashPath = extractHashPartByLevel(oldChild->getHash(), j);
-
-
         }
         cur_c->insertChild(newChild, newChildHashPath);
         cur_c->insertChild(oldChild, oldChildHashPath);
-
         updated->replaceChild(i, path);
     }
+    return updated;
 
 }
 
 template<class K, class V>
-void transformToWithDeletedKey(CNode<K, V> *updated, SNode<K, V> *subNode, K key, uint8_t path) {
+CNode<K, V> *buildWithDeletedKey(CNode<K, V> *org, SNode<K, V> *subNode, K key, uint8_t path) {
+    CNode<K, V> *updated = getCopy(org);
     auto *newSubNode = new SNode<K, V>(*subNode);
     if (newSubNode->pair.size() > 1) {
         newSubNode->pair.erase({key, subNode->getValue(key)});
@@ -306,6 +311,7 @@ void transformToWithDeletedKey(CNode<K, V> *updated, SNode<K, V> *subNode, K key
     } else {
         updated->deleteChild(path);
     }
+    return updated;
 }
 
 template<class K, class V>
@@ -382,7 +388,7 @@ public:
                 }
             } else {
                 InsertResult res = insert(root, nullptr, new SNode<K, V>(key, value), 0);
-                if (res != INSERT_RESTART){
+                if (res != INSERT_RESTART) {
                     return res;
                 }
             }
@@ -419,19 +425,19 @@ private:
             return REMOVE_RESTART;
         }
 
-        CNode<K, V> *updated = getCopy(m);
         uint8_t path = extractHashPartByLevel(hash, level);
-        Node *subNode = updated->getSubNode(path);
+        Node *subNode = m->getSubNode(path);
 
         RemoveResult res{};
+        CNode<K, V> *updated = m;
 
         if (subNode == nullptr) {
             res = REMOVE_NOT_FOUND;
         } else if (subNode->type == SNODE) {
             if (static_cast<SNode<K, V> *>(subNode)->contains(key)) {
                 V delVal = static_cast<SNode<K, V> *>(subNode)->getValue(key);
-                transformToWithDeletedKey(updated, static_cast<SNode<K, V> *>(subNode), key,
-                                          extractHashPartByLevel(hash, level));
+                updated = buildWithDeletedKey(m, static_cast<SNode<K, V> *>(subNode), key,
+                                              extractHashPartByLevel(hash, level));
                 updated->isTomb = isTombed(updated, root, currentNode);
                 res = (currentNode->main.compare_exchange_strong(m, updated))
                       ? createSuccessfulRemoveResult(delVal) : REMOVE_RESTART;
@@ -459,27 +465,25 @@ private:
             return INSERT_RESTART;
         }
 
-
-        CNode<K, V> *updated = getCopy(m);
         uint8_t path = extractHashPartByLevel(newNode->getHash(), level);
 
-        Node *subNode = updated->getSubNode(path);
+        Node *subNode = m->getSubNode(path);
         if (subNode == nullptr) {
-            transformToWithInsertedChild(updated, newNode, path);
+            CNode<K, V> *updated = buildWithInsertedChild(m, newNode, path);
             updated->isTomb = isTombed(updated, root, currentNode);
             return currentNode->main.compare_exchange_strong(m, updated) ? INSERT_SUCCESSFUL : INSERT_RESTART;
         } else if (subNode->type == SNODE) {
             auto *s = static_cast<SNode<K, V> *>(subNode);
             if (s->contains(newNode)) {
-                transformToWithReplacedPair(updated, s, newNode, path);
+                CNode<K, V> *updated = buildToWithReplacedPair(m, s, newNode, path);
                 updated->isTomb = isTombed(updated, root, currentNode);
                 return currentNode->main.compare_exchange_strong(m, updated) ? INSERT_SUCCESSFUL : INSERT_RESTART;
             } else if (level == MAX_LEVEL_COUNT) {
-                transformToWithMergedChild(updated, s, newNode, path);
+                CNode<K, V> *updated = buildWithMergedChild(m, s, newNode, path);
                 updated->isTomb = isTombed(updated, root, currentNode);
                 return currentNode->main.compare_exchange_strong(m, updated) ? INSERT_SUCCESSFUL : INSERT_RESTART;
             } else {
-                transformToWithDownChild<K, V>(updated, newNode, s, level, path);
+                CNode<K, V> *updated = buildWithDownChild(m, newNode, s, level, path, root == currentNode);
                 updated->isTomb = isTombed(updated, root, currentNode);
                 return currentNode->main.compare_exchange_strong(m, updated) ? INSERT_SUCCESSFUL : INSERT_RESTART;
             }
