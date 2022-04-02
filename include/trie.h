@@ -66,7 +66,6 @@ public:
                 return p.value;
             }
         }
-        // TODO ???
         return 0;
     }
 
@@ -145,20 +144,41 @@ public:
     atomic<CNode<K, V> *> main;
 };
 
+
+struct InsertResult{
+    enum class Status{
+        Inserted,
+        Failed
+    };
+
+    int value;
+    Status status;
+
+    bool operator==(InsertResult b) const {
+        if ((status == Status::Failed) && (b.status == Status::Failed)) return true;
+        if ((status == Status::Inserted) && (b.status == Status::Inserted)) return true;
+        return false;
+    }
+
+    bool operator!=(InsertResult b) const {
+        return !(*this == b);
+    }
+};
+
 struct LookupResult {
-    enum LookupResultStatus {
+    enum class Status {
         NotFound,
         Found,
         Failed
     };
 
     int value;
-    LookupResultStatus status;
+    Status status;
 
     bool operator==(LookupResult b) const {
-        if ((this->status == NotFound) && (b.status == NotFound)) return true;
-        if ((this->status == Failed) && (b.status == Failed)) return true;
-        if ((this->status == Found) && (b.status == Found)) return this->value == b.value;
+        if ((status == Status::NotFound) && (b.status == Status::NotFound)) return true;
+        if ((status == Status::Failed) && (b.status == Status::Failed)) return true;
+        if ((status == Status::Found) && (b.status == Status::Found)) return this->value == b.value;
         return false;
     }
 
@@ -167,15 +187,19 @@ struct LookupResult {
     }
 };
 
+const InsertResult INSERT_RESTART{0, InsertResult::Status::Failed};
+const InsertResult INSERT_SUCCESSFUL{0, InsertResult::Status::Inserted};
+
+
 LookupResult createSuccessfulLookupResult(int value) {
-    return {value, LookupResult::Found};
+    return {value, LookupResult::Status::Found};
 }
 
-const LookupResult LOOKUP_NOT_FOUND{0, LookupResult::NotFound};
-const LookupResult LOOKUP_RESTART{0, LookupResult::Failed};
+const LookupResult LOOKUP_NOT_FOUND{0, LookupResult::Status::NotFound};
+const LookupResult LOOKUP_RESTART{0, LookupResult::Status::Failed};
 
 struct RemoveResult {
-    enum Status {
+    enum class Status {
         Removed,
         Failed,
         NotFound,
@@ -185,9 +209,9 @@ struct RemoveResult {
     Status status;
 
     bool operator==(RemoveResult rightOperand) const {
-        if ((status == NotFound) && (rightOperand.status == NotFound)) return true;
-        if ((status == Failed) && (rightOperand.status == Failed)) return true;
-        if ((status == Removed) && (rightOperand.status == Removed)) return value == rightOperand.value;
+        if ((status == Status::NotFound) && (rightOperand.status == Status::NotFound)) return true;
+        if ((status == Status::Failed) && (rightOperand.status == Status::Failed)) return true;
+        if ((status == Status::Removed) && (rightOperand.status == Status::Removed)) return value == rightOperand.value;
         return false;
     }
 
@@ -196,11 +220,11 @@ struct RemoveResult {
     }
 };
 
-const RemoveResult REMOVE_NOT_FOUND{0, RemoveResult::NotFound};
-const RemoveResult REMOVE_RESTART{0, RemoveResult::Failed};
+const RemoveResult REMOVE_NOT_FOUND{0, RemoveResult::Status::NotFound};
+const RemoveResult REMOVE_RESTART{0, RemoveResult::Status::Failed};
 
 RemoveResult createSuccessfulRemoveResult(int value) {
-    return {value, RemoveResult::Removed};
+    return {value, RemoveResult::Status::Removed};
 }
 
 template<class K, class V>
@@ -346,20 +370,20 @@ public:
     }
 
 
-    bool insert(K key, V value) {
+    InsertResult insert(K key, V value) {
         while (true) {
             CNode<K, V> *old = root->main.load();
             if (old == nullptr) {
-                // root -> c -> s
                 auto *c = new CNode<K, V>();
                 auto *s = new SNode<K, V>(key, value);
                 c->insertChild(s, extractHashPartByLevel(s->getHash(), 0));
                 if (root->main.compare_exchange_strong(old, c)) {
-                    return true;
+                    return InsertResult{.status = InsertResult::Status::Inserted};
                 }
             } else {
-                if (insert(root, nullptr, new SNode<K, V>(key, value), 0)) {
-                    return true;
+                InsertResult res = insert(root, nullptr, new SNode<K, V>(key, value), 0);
+                if (res != INSERT_RESTART){
+                    return res;
                 }
             }
         }
@@ -368,8 +392,6 @@ public:
 private:
     LookupResult lookup(INode<K, V> *currentNode, INode<K, V> *parent, K key, uint64_t hash, uint8_t level) {
         CNode<K, V> *pm = parent ? parent->main.load() : nullptr;
-
-
         CNode<K, V> *m = currentNode->main.load();
 
         if (contractParent(parent, currentNode, pm, m, level, hash)) {
@@ -429,12 +451,12 @@ private:
         return res;
     }
 
-    bool insert(INode<K, V> *currentNode, INode<K, V> *parent, SNode<K, V> *newNode, uint8_t level) {
+    InsertResult insert(INode<K, V> *currentNode, INode<K, V> *parent, SNode<K, V> *newNode, uint8_t level) {
         CNode<K, V> *pm = parent ? parent->main.load() : nullptr;
         CNode<K, V> *m = currentNode->main.load();
 
         if (contractParent(parent, currentNode, pm, m, level, newNode->getHash())) {
-            return false;
+            return INSERT_RESTART;
         }
 
 
@@ -445,28 +467,28 @@ private:
         if (subNode == nullptr) {
             transformToWithInsertedChild(updated, newNode, path);
             updated->isTomb = isTombed(updated, root, currentNode);
-            return currentNode->main.compare_exchange_strong(m, updated);
+            return currentNode->main.compare_exchange_strong(m, updated) ? INSERT_SUCCESSFUL : INSERT_RESTART;
         } else if (subNode->type == SNODE) {
             auto *s = static_cast<SNode<K, V> *>(subNode);
             if (s->contains(newNode)) {
                 transformToWithReplacedPair(updated, s, newNode, path);
                 updated->isTomb = isTombed(updated, root, currentNode);
-                return currentNode->main.compare_exchange_strong(m, updated);
+                return currentNode->main.compare_exchange_strong(m, updated) ? INSERT_SUCCESSFUL : INSERT_RESTART;
             } else if (level == MAX_LEVEL_COUNT) {
                 transformToWithMergedChild(updated, s, newNode, path);
                 updated->isTomb = isTombed(updated, root, currentNode);
-                return currentNode->main.compare_exchange_strong(m, updated);
+                return currentNode->main.compare_exchange_strong(m, updated) ? INSERT_SUCCESSFUL : INSERT_RESTART;
             } else {
                 transformToWithDownChild<K, V>(updated, newNode, s, level, path);
                 updated->isTomb = isTombed(updated, root, currentNode);
-                return currentNode->main.compare_exchange_strong(m, updated);
+                return currentNode->main.compare_exchange_strong(m, updated) ? INSERT_SUCCESSFUL : INSERT_RESTART;
             }
         } else if (subNode->type == INODE) {
             return insert(static_cast<INode<K, V> *>(subNode), currentNode, newNode, level + 1);
         } else {
             fprintf(stderr, "Node with unknown type\n");
             assert(false);
-            return false;
+            return INSERT_RESTART;
         }
     }
 };

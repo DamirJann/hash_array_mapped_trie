@@ -24,7 +24,6 @@ int main(){
 //    trie.remove(1);
     for (int i = 0; i < count; i++) {
         RemoveResult r = trie.remove(i);
-        cout << r.status << ' ' << r.value  << endl;
         assert(r == createSuccessfulRemoveResult(i));
     }
 //

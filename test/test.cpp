@@ -464,7 +464,7 @@ TEST(TRIE, HAPPY_FLOW__INSERTING_AND_REMOVING_ONE_ELEMENT_BY_MANY_THREAD) {
             int *averageIterationCount = (int *) (*static_cast<vector<void *> *>(args))[2];
 
             for (int i = *id * (*averageIterationCount); i < (*id + 1) * (*averageIterationCount); i++) {
-                assert(trie->insert(i, i) == true);
+                assert(trie->insert(i, i) != INSERT_RESTART);
                 assert(trie->lookup(i) == createSuccessfulLookupResult(i));
                 assert(trie->remove(i) == createSuccessfulRemoveResult(i));
                 assert(trie->lookup(i) == LOOKUP_NOT_FOUND);
@@ -690,7 +690,7 @@ TEST(TRIE, HAPPY_FLOW__INSERTING_THE_SAME_KEY_MANY_TIMES_BY_MANY_THREAD) {
     }
 
     // assert
-    ASSERT_EQ(trie.lookup(0).status, LookupResult::Found);
+    ASSERT_NE(trie.lookup(0), LOOKUP_NOT_FOUND);
     ASSERT_LT(trie.lookup(0).value, thread.size());
     ASSERT_GE(trie.lookup(0).value, 0);
 }
