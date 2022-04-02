@@ -292,11 +292,15 @@ bool isTombed(const CNode<K, V> *const c, const INode<K, V> *const root, const I
 }
 
 template<class K, class V>
-bool contractParent(INode<K, V> *parent, CNode<K, V>* pm,  CNode<K, V>* m, uint8_t level, uint64_t hash) {
+bool
+contractParent(INode<K, V> *parent, INode<K, V> *i, CNode<K, V> *pm, CNode<K, V> *m, uint8_t level, uint64_t hash) {
     if (!m->isTomb) return false;
 
-    CNode<K, V> *updated = getCopy(pm);
+    if (pm->getSubNode(extractHashPartByLevel(hash, level - 1)) != i) {
+        return true;
+    }
 
+    CNode<K, V> *updated = getCopy(pm);
     transformToContractedParent(updated, m, extractHashPartByLevel(hash, level - 1));
     parent->main.compare_exchange_strong(pm, updated);
     return true;
@@ -364,9 +368,11 @@ public:
 private:
     LookupResult lookup(INode<K, V> *currentNode, INode<K, V> *parent, K key, uint64_t hash, uint8_t level) {
         CNode<K, V> *pm = parent ? parent->main.load() : nullptr;
+
+
         CNode<K, V> *m = currentNode->main.load();
 
-        if (contractParent(parent, pm, m, level, hash)){
+        if (contractParent(parent, currentNode, pm, m, level, hash)) {
             return LOOKUP_RESTART;
         }
 
@@ -387,7 +393,7 @@ private:
         CNode<K, V> *pm = parent ? parent->main.load() : nullptr;
         CNode<K, V> *m = currentNode->main.load();
 
-        if (contractParent(parent, pm, m, level, hash)){
+        if (contractParent(parent, currentNode, pm, m, level, hash)) {
             return REMOVE_RESTART;
         }
 
@@ -418,8 +424,7 @@ private:
             return res;
         }
 
-        // TODO think
-//        contractParent(parent, pm, m, level, hash);
+        contractParent(parent, currentNode, pm, updated, level, hash);
 
         return res;
     }
@@ -428,7 +433,7 @@ private:
         CNode<K, V> *pm = parent ? parent->main.load() : nullptr;
         CNode<K, V> *m = currentNode->main.load();
 
-        if (contractParent(parent, pm, m, level, newNode->getHash())){
+        if (contractParent(parent, currentNode, pm, m, level, newNode->getHash())) {
             return false;
         }
 
