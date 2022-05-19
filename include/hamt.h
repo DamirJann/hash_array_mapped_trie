@@ -205,7 +205,7 @@ public:
             NotFound,
         };
 
-        int value;
+        V value;
         Status status;
 
         bool operator==(RemoveResult rightOperand) const {
