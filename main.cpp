@@ -1,4 +1,4 @@
-#include "include/trie.h"
+#include "include/hamt.h"
 #include "include/utils.h"
 #include "include/visualize.h"
 #include <assert.h>
@@ -8,31 +8,31 @@
 
 
 int main(){
-    Trie<int, int> trie;
+    Hamt<int, int> hamt;
     int count = 34;
 
     // act & assert
     for (int i = 0; i < count; i++) {
-        trie.insert(i, i);
+        hamt.insert(i, i);
     }
 //
     for (int i = 0; i < count; i++) {
-        assert(trie.lookup(i) == createSuccessfulLookupResult(i));
+        assert(hamt.lookup(i) == hamt.createSuccessfulLookupResult(i));
     }
 
-//    trie.remove(0);
-//    trie.remove(1);
+//    hamt.remove(0);
+//    hamt.remove(1);
     for (int i = 0; i < count; i++) {
-        RemoveResult r = trie.remove(i);
-        assert(r == createSuccessfulRemoveResult(i));
+//        Hamt<int,int>::RemoveResult r = hamt.remove(i);
+//        assert(r == hamt.createSuccessfulRemoveResult(i));
     }
 //
 //    for (int i = 0; i < count; i++) {
-//        ASSERT_EQ(trie.lookup(i), LOOKUP_NOT_FOUND);
+//        ASSERT_EQ(hamt.lookup(i), LOOKUP_NOT_FOUND);
 //    }
 
     ofstream f = std::ofstream("graph.txt");
-    visualize(f, &trie);
+    visualize(f, &hamt);
     system("dot -Tpng ./graph.txt -o graph.png");
     f.close();
 

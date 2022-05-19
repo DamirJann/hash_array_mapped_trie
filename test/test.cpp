@@ -3,7 +3,7 @@
 #define protected public
 #define private   public
 
-#include "../include/trie.h"
+#include "../include/hamt.h"
 
 #undef protected
 #undef private
@@ -116,12 +116,12 @@ TEST(BITMAP, HAPPY_FLOW__EXTRACT_HASH_PART) {
 TEST(CNode, HAPPY_FLOW__GET_COPY) {
     // arrange
 
-    auto *c1 = new CNode<int, int>();
-    auto *k = new SNode<int, int>(4, 5);
+    auto *c1 = new Hamt<int, int>::CNode;
+    auto *k = new Hamt<int, int>::SNode(4, 5);
     c1->insertChild(k, 4);
 
     // act
-    CNode<int, int> *c2 = getCopy(c1);
+    Hamt<int, int>::CNode *c2 = Hamt<int,int>::getCopy(c1);
 
     // assert
     ASSERT_NE(c1, c2);
@@ -131,7 +131,7 @@ TEST(CNode, HAPPY_FLOW__GET_COPY) {
 
 TEST(CNode, HAPPY_FLOW_GET__NODE_LOOKUP_NOT_FOUND) {
     // arrange
-    CNode<string, int> node;
+    Hamt<string, int>::CNode node;
     node.bmp = {0b100001};
 
     // assert
@@ -142,45 +142,45 @@ TEST(CNode, HAPPY_FLOW_GET__NODE_LOOKUP_NOT_FOUND) {
 //  AFTER: i1 -> c1 -> i2 -> c2 -> i3 -> c3 -> k1, k2
 TEST(TRIE, HAPPY_FLOW__INSERT_TO_EMPTY_TRIE) {
     // arrange
-    Trie<string, int> trie;
+    Hamt<string, int> hamt;
 
     // act
-    trie.insert("abc", 1);
+    hamt.insert("abc", 1);
 
     // assert
-    ASSERT_NE(trie.root->main.load()->getSubNode(8), nullptr);
-    ASSERT_EQ(trie.root->main.load()->getSubNode(0), nullptr);
+    ASSERT_NE(hamt.root->main.load()->getSubNode(8), nullptr);
+    ASSERT_EQ(hamt.root->main.load()->getSubNode(0), nullptr);
 }
 
 TEST(TRIE, HAPPY_FLOW__INSERT_TWO_KEYS_WITH_EQUAL_HASH) {
     // arrange
-    Trie<string, int> trie;
+    Hamt<string, int> hamt;
 
     // act
-    trie.insert("k71", 1);
-    trie.insert("k90", 2);
+    hamt.insert("k71", 1);
+    hamt.insert("k90", 2);
 
     // assert
 
-    ASSERT_EQ(trie.lookup("k71"), createSuccessfulLookupResult(1));
-    ASSERT_EQ(trie.lookup("k90"),  createSuccessfulLookupResult(2));
+    ASSERT_EQ(hamt.lookup("k71"), (hamt.createSuccessfulLookupResult(1)));
+    ASSERT_EQ(hamt.lookup("k90"), (hamt.createSuccessfulLookupResult(2)));
 }
 
 TEST(TRIE, HAPPY_FLOW__CONTRACTED_CHECK_WITH_THREE_KEYS) {
     // arrange
-    Trie<int, int> trie;
+    Hamt<int, int> hamt;
 
     // act & act
-    trie.insert(0b00000, 1);
-    trie.insert(0b00001, 2);
-    trie.insert(0b100001, 3);
-    ASSERT_EQ(trie.root->main.load()->getChildCount(), 2);
-    trie.remove(0b100001);
+    hamt.insert(0b00000, 1);
+    hamt.insert(0b00001, 2);
+    hamt.insert(0b100001, 3);
+    ASSERT_EQ(hamt.root->main.load()->getChildCount(), 2);
+    hamt.remove(0b100001);
 
 
-    ASSERT_EQ(trie.root->main.load()->array[0]->type, SNODE);
-    ASSERT_EQ(trie.root->main.load()->getChildCount(), 2);
-    ASSERT_EQ(trie.root->main.load()->array[1]->type, SNODE);
+    ASSERT_EQ(hamt.root->main.load()->array[0]->type, SNODE);
+    ASSERT_EQ(hamt.root->main.load()->getChildCount(), 2);
+    ASSERT_EQ(hamt.root->main.load()->array[1]->type, SNODE);
 }
 //
 //TEST(TRIE, HAPPY_FLOW__CONTRACTED_CHECK_WITH_MANY_KEYS) {
@@ -193,137 +193,137 @@ TEST(TRIE, HAPPY_FLOW__CONTRACTED_CHECK_WITH_THREE_KEYS) {
 
 TEST(TRIE, HAPPY_FLOW__LOOKUP) {
     // arrange
-    Trie<string, int> trie;
+    Hamt<string, int> hamt;
 
-    trie.insert("k1", 1);
-    trie.insert("k2", 2);
-    trie.insert("k3", 3);
-    trie.insert("k4", 4);
-    trie.insert("k5", 5);
-    trie.insert("k6", 6);
-    trie.insert("k7", 7);
-    trie.insert("k8", 8);
-    trie.insert("k9", 9);
-    trie.insert("k10", 10);
-    trie.insert("k11", 11);
-    trie.insert("k12", 12);
-    trie.insert("k13", 13);
-    trie.insert("k14", 14);
-    trie.insert("k15", 15);
-    trie.insert("k16", 16);
-    trie.insert("k17", 17);
-    trie.insert("k18", 18);
-    trie.insert("k19", 19);
-    trie.insert("k20", 20);
-    trie.insert("k21", 21);
-    trie.insert("k22", 22);
-    trie.insert("k23", 23);
-    trie.insert("k24", 24);
-    trie.insert("k25", 25);
+    hamt.insert("k1", 1);
+    hamt.insert("k2", 2);
+    hamt.insert("k3", 3);
+    hamt.insert("k4", 4);
+    hamt.insert("k5", 5);
+    hamt.insert("k6", 6);
+    hamt.insert("k7", 7);
+    hamt.insert("k8", 8);
+    hamt.insert("k9", 9);
+    hamt.insert("k10", 10);
+    hamt.insert("k11", 11);
+    hamt.insert("k12", 12);
+    hamt.insert("k13", 13);
+    hamt.insert("k14", 14);
+    hamt.insert("k15", 15);
+    hamt.insert("k16", 16);
+    hamt.insert("k17", 17);
+    hamt.insert("k18", 18);
+    hamt.insert("k19", 19);
+    hamt.insert("k20", 20);
+    hamt.insert("k21", 21);
+    hamt.insert("k22", 22);
+    hamt.insert("k23", 23);
+    hamt.insert("k24", 24);
+    hamt.insert("k25", 25);
 
     // act & assert
-    ASSERT_EQ(trie.lookup("k1").value, 1);
-    ASSERT_EQ(trie.lookup("k2").value, 2);
-    ASSERT_EQ(trie.lookup("k3").value, 3);
-    ASSERT_EQ(trie.lookup("k4").value, 4);
-    ASSERT_EQ(trie.lookup("k5").value, 5);
-    ASSERT_EQ(trie.lookup("k6").value, 6);
-    ASSERT_EQ(trie.lookup("k7").value, 7);
-    ASSERT_EQ(trie.lookup("k8").value, 8);
-    ASSERT_EQ(trie.lookup("k9").value, 9);
-    ASSERT_EQ(trie.lookup("k10").value, 10);
-    ASSERT_EQ(trie.lookup("k11").value, 11);
-    ASSERT_EQ(trie.lookup("k12").value, 12);
-    ASSERT_EQ(trie.lookup("k13").value, 13);
-    ASSERT_EQ(trie.lookup("k14").value, 14);
-    ASSERT_EQ(trie.lookup("k15").value, 15);
-    ASSERT_EQ(trie.lookup("k16").value, 16);
-    ASSERT_EQ(trie.lookup("k17").value, 17);
-    ASSERT_EQ(trie.lookup("k18").value, 18);
-    ASSERT_EQ(trie.lookup("k19").value, 19);
-    ASSERT_EQ(trie.lookup("k20").value, 20);
-    ASSERT_EQ(trie.lookup("k21").value, 21);
-    ASSERT_EQ(trie.lookup("k22").value, 22);
-    ASSERT_EQ(trie.lookup("k23").value, 23);
-    ASSERT_EQ(trie.lookup("k24").value, 24);
-    ASSERT_EQ(trie.lookup("k25").value, 25);
+    ASSERT_EQ(hamt.lookup("k1").value, 1);
+    ASSERT_EQ(hamt.lookup("k2").value, 2);
+    ASSERT_EQ(hamt.lookup("k3").value, 3);
+    ASSERT_EQ(hamt.lookup("k4").value, 4);
+    ASSERT_EQ(hamt.lookup("k5").value, 5);
+    ASSERT_EQ(hamt.lookup("k6").value, 6);
+    ASSERT_EQ(hamt.lookup("k7").value, 7);
+    ASSERT_EQ(hamt.lookup("k8").value, 8);
+    ASSERT_EQ(hamt.lookup("k9").value, 9);
+    ASSERT_EQ(hamt.lookup("k10").value, 10);
+    ASSERT_EQ(hamt.lookup("k11").value, 11);
+    ASSERT_EQ(hamt.lookup("k12").value, 12);
+    ASSERT_EQ(hamt.lookup("k13").value, 13);
+    ASSERT_EQ(hamt.lookup("k14").value, 14);
+    ASSERT_EQ(hamt.lookup("k15").value, 15);
+    ASSERT_EQ(hamt.lookup("k16").value, 16);
+    ASSERT_EQ(hamt.lookup("k17").value, 17);
+    ASSERT_EQ(hamt.lookup("k18").value, 18);
+    ASSERT_EQ(hamt.lookup("k19").value, 19);
+    ASSERT_EQ(hamt.lookup("k20").value, 20);
+    ASSERT_EQ(hamt.lookup("k21").value, 21);
+    ASSERT_EQ(hamt.lookup("k22").value, 22);
+    ASSERT_EQ(hamt.lookup("k23").value, 23);
+    ASSERT_EQ(hamt.lookup("k24").value, 24);
+    ASSERT_EQ(hamt.lookup("k25").value, 25);
 
-    ASSERT_EQ(trie.lookup("k223"), LOOKUP_NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k224"), LOOKUP_NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k225"), LOOKUP_NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k226"), LOOKUP_NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k227"), LOOKUP_NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k228"), LOOKUP_NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k229"), LOOKUP_NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k2210"), LOOKUP_NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k2211"), LOOKUP_NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k2212"), LOOKUP_NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k2213"), LOOKUP_NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k2214"), LOOKUP_NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k2215"), LOOKUP_NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k2216"), LOOKUP_NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k2217"), LOOKUP_NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k2218"), LOOKUP_NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k2229"), LOOKUP_NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k2220"), LOOKUP_NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k2222"), LOOKUP_NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k2223"), LOOKUP_NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k2224"), LOOKUP_NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k2225"), LOOKUP_NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k2226"), LOOKUP_NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k227"), LOOKUP_NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k2228"), LOOKUP_NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k22d29"), LOOKUP_NOT_FOUND);
+    ASSERT_EQ(hamt.lookup("k223"), (hamt.LOOKUP_NOT_FOUND));
+    ASSERT_EQ(hamt.lookup("k224"), (hamt.LOOKUP_NOT_FOUND));
+    ASSERT_EQ(hamt.lookup("k225"), (hamt.LOOKUP_NOT_FOUND));
+    ASSERT_EQ(hamt.lookup("k226"), (hamt.LOOKUP_NOT_FOUND));
+    ASSERT_EQ(hamt.lookup("k227"), (hamt.LOOKUP_NOT_FOUND));
+    ASSERT_EQ(hamt.lookup("k228"), (hamt.LOOKUP_NOT_FOUND));
+    ASSERT_EQ(hamt.lookup("k229"), (hamt.LOOKUP_NOT_FOUND));
+    ASSERT_EQ(hamt.lookup("k2210"), (hamt.LOOKUP_NOT_FOUND));
+    ASSERT_EQ(hamt.lookup("k2211"), (hamt.LOOKUP_NOT_FOUND));
+    ASSERT_EQ(hamt.lookup("k2212"), (hamt.LOOKUP_NOT_FOUND));
+    ASSERT_EQ(hamt.lookup("k2213"), (hamt.LOOKUP_NOT_FOUND));
+    ASSERT_EQ(hamt.lookup("k2214"), (hamt.LOOKUP_NOT_FOUND));
+    ASSERT_EQ(hamt.lookup("k2215"), (hamt.LOOKUP_NOT_FOUND));
+    ASSERT_EQ(hamt.lookup("k2216"), (hamt.LOOKUP_NOT_FOUND));
+    ASSERT_EQ(hamt.lookup("k2217"), (hamt.LOOKUP_NOT_FOUND));
+    ASSERT_EQ(hamt.lookup("k2218"), (hamt.LOOKUP_NOT_FOUND));
+    ASSERT_EQ(hamt.lookup("k2229"), (hamt.LOOKUP_NOT_FOUND));
+    ASSERT_EQ(hamt.lookup("k2220"), (hamt.LOOKUP_NOT_FOUND));
+    ASSERT_EQ(hamt.lookup("k2222"), (hamt.LOOKUP_NOT_FOUND));
+    ASSERT_EQ(hamt.lookup("k2223"), (hamt.LOOKUP_NOT_FOUND));
+    ASSERT_EQ(hamt.lookup("k2224"), (hamt.LOOKUP_NOT_FOUND));
+    ASSERT_EQ(hamt.lookup("k2225"), (hamt.LOOKUP_NOT_FOUND));
+    ASSERT_EQ(hamt.lookup("k2226"), (hamt.LOOKUP_NOT_FOUND));
+    ASSERT_EQ(hamt.lookup("k227"), (hamt.LOOKUP_NOT_FOUND));
+    ASSERT_EQ(hamt.lookup("k2228"), (hamt.LOOKUP_NOT_FOUND));
+    ASSERT_EQ(hamt.lookup("k22d29"), (hamt.LOOKUP_NOT_FOUND));
 
 }
 
 TEST(TRIE, HAPPY_FLOW__REMOVE_ALL_KEYS) {
     // arrange
-    Trie<string, int> trie;
-    trie.insert("k1", 1);
-    trie.insert("k2", 2);
-    trie.insert("k3", 3);
-    trie.insert("k30", 30);
-    trie.insert("k4", 4);
+    Hamt<string, int> hamt;
+    hamt.insert("k1", 1);
+    hamt.insert("k2", 2);
+    hamt.insert("k3", 3);
+    hamt.insert("k30", 30);
+    hamt.insert("k4", 4);
 
     // act
-    ASSERT_EQ(trie.remove("k1"), createSuccessfulRemoveResult(1));
-    ASSERT_EQ(trie.remove("k2"), createSuccessfulRemoveResult(2));
-    ASSERT_EQ(trie.remove("k30"), createSuccessfulRemoveResult(30));
-    ASSERT_EQ(trie.remove("k3"), createSuccessfulRemoveResult(3));
-    ASSERT_EQ(trie.remove("k4"), createSuccessfulRemoveResult(4));
-    ASSERT_EQ(trie.remove("k5"), REMOVE_NOT_FOUND);
-    ASSERT_EQ(trie.remove("k7"), REMOVE_NOT_FOUND);
+    ASSERT_EQ(hamt.remove("k1"), (hamt.createSuccessfulRemoveResult(1)));
+    ASSERT_EQ(hamt.remove("k2"), (hamt.createSuccessfulRemoveResult(2)));
+    ASSERT_EQ(hamt.remove("k30"), (hamt.createSuccessfulRemoveResult(30)));
+    ASSERT_EQ(hamt.remove("k3"), (hamt.createSuccessfulRemoveResult(3)));
+    ASSERT_EQ(hamt.remove("k4"), (hamt.createSuccessfulRemoveResult(4)));
+    ASSERT_EQ(hamt.remove("k5"), (hamt.REMOVE_NOT_FOUND));
+    ASSERT_EQ(hamt.remove("k7"), (hamt.REMOVE_NOT_FOUND));
 
     // assert
-    ASSERT_EQ(trie.lookup("k1"), LOOKUP_NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k2"), LOOKUP_NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k3"), LOOKUP_NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k30"), LOOKUP_NOT_FOUND);
-    ASSERT_EQ(trie.lookup("k4"), LOOKUP_NOT_FOUND);
+    ASSERT_EQ(hamt.lookup("k1"), (hamt.LOOKUP_NOT_FOUND));
+    ASSERT_EQ(hamt.lookup("k2"), (hamt.LOOKUP_NOT_FOUND));
+    ASSERT_EQ(hamt.lookup("k3"), (hamt.LOOKUP_NOT_FOUND));
+    ASSERT_EQ(hamt.lookup("k30"), (hamt.LOOKUP_NOT_FOUND));
+    ASSERT_EQ(hamt.lookup("k4"), (hamt.LOOKUP_NOT_FOUND));
 
 }
 
 TEST(TRIE, HAPPY_FLOW__INSERTING_AND_REMOVING_KEYS_BY_ONE_THREAD) {
     // arrange
-    Trie<int, int> trie;
+    Hamt<int, int> hamt;
     int count = 100000;
 
     // act & assert
     for (int i = 0; i < count; i++) {
-        trie.insert(i, i);
+        hamt.insert(i, i);
     }
 
     for (int i = 0; i < count; i++) {
-        ASSERT_EQ(trie.lookup(i), createSuccessfulLookupResult(i));
+        ASSERT_EQ(hamt.lookup(i), (hamt.createSuccessfulLookupResult(i)));
     }
 
     for (int i = 0; i < count; i++) {
-        ASSERT_EQ(trie.remove(i), createSuccessfulRemoveResult(i));
+        ASSERT_EQ(hamt.remove(i), (hamt.createSuccessfulRemoveResult(i)));
     }
 
     for (int i = 0; i < count; i++) {
-        ASSERT_EQ(trie.lookup(i), LOOKUP_NOT_FOUND);
+        ASSERT_EQ(hamt.lookup(i), (hamt.LOOKUP_NOT_FOUND));
     }
 
 }
@@ -331,23 +331,23 @@ TEST(TRIE, HAPPY_FLOW__INSERTING_AND_REMOVING_KEYS_BY_ONE_THREAD) {
 
 TEST(TRIE, HAPPY_FLOW__INSERTING_AND_LOOKING_UP_BY_MANY_THREAD) {
     // arrange
-    Trie<int, int> trie;
+    Hamt<int, int> hamt;
     int threadCount = 10;
 
     vector<pthread_t> thread(threadCount);
     vector<vector<void *>> attr(threadCount);
     for (int i = 0; i < attr.size(); i++) {
-        attr[i] = {&trie, new int(i), new int(averageIterationCount)};
+        attr[i] = {&hamt, new int(i), new int(averageIterationCount)};
     }
 
     for (int i = 0; i < thread.size(); i++) {
         pthread_create(&thread[i], nullptr, [](void *args) -> void * {
-            auto *trie = (Trie<int, int> *) (*static_cast<vector<void *> *>(args))[0];
+            auto *hamt = (Hamt<int, int> *) (*static_cast<vector<void *> *>(args))[0];
             int *id = (int *) (*static_cast<vector<void *> *>(args))[1];
             int *averageIterationCount = (int *) (*static_cast<vector<void *> *>(args))[2];
 
             for (int i = *id * (*averageIterationCount); i < (*id + 1) * (*averageIterationCount); i++) {
-                trie->insert(i, i);
+                hamt->insert(i, i);
             }
             pthread_exit(nullptr);
         }, &attr[i]);
@@ -360,31 +360,31 @@ TEST(TRIE, HAPPY_FLOW__INSERTING_AND_LOOKING_UP_BY_MANY_THREAD) {
 
     // assert
     for (int i = 0; i < averageIterationCount * threadCount; i++) {
-        ASSERT_EQ(trie.lookup(i), createSuccessfulLookupResult(i));
+        ASSERT_EQ(hamt.lookup(i), (hamt.createSuccessfulLookupResult(i)));
     }
 }
 
 
 TEST(TRIE, HAPPY_FLOW__INSERTING_BY_MANY_THREAD) {
     // arrange
-    Trie<int, int> trie;
+    Hamt<int, int> hamt;
     int threadCount = 10;
 
 
     vector<pthread_t> thread(threadCount);
     vector<vector<void *>> attr(threadCount);
     for (int i = 0; i < attr.size(); i++) {
-        attr[i] = {&trie, new int(i), new int(averageIterationCount)};
+        attr[i] = {&hamt, new int(i), new int(averageIterationCount)};
     }
 
     for (int i = 0; i < thread.size(); i++) {
         pthread_create(&thread[i], nullptr, [](void *args) -> void * {
-            auto *trie = (Trie<int, int> *) (*static_cast<vector<void *> *>(args))[0];
+            auto *hamt = (Hamt<int, int> *) (*static_cast<vector<void *> *>(args))[0];
             int *id = (int *) (*static_cast<vector<void *> *>(args))[1];
             int *averageIterationCount = (int *) (*static_cast<vector<void *> *>(args))[2];
 
             for (int i = *id * (*averageIterationCount); i < (*id + 1) * (*averageIterationCount); i++) {
-                trie->insert(i, i);
+                hamt->insert(i, i);
             }
 
             pthread_exit(nullptr);
@@ -398,32 +398,32 @@ TEST(TRIE, HAPPY_FLOW__INSERTING_BY_MANY_THREAD) {
 
     // assert
     for (int i = 0; i < averageIterationCount * threadCount; i++) {
-        ASSERT_EQ(trie.lookup(i), createSuccessfulLookupResult(i));
+        ASSERT_EQ(hamt.lookup(i), (hamt.createSuccessfulLookupResult(i)));
     }
 }
 
 TEST(TRIE, HAPPY_FLOW__LOOKING_UP_KEYS_BY_MANY_THREAD) {
     // arrange
-    Trie<int, int> trie;
+    Hamt<int, int> hamt;
     int threadCount = 10;
 
     for (int i = averageIterationCount; i < averageIterationCount * 10; i++) {
-        trie.insert(i, i);
+        hamt.insert(i, i);
     }
 
     vector<pthread_t> thread(threadCount);
     vector<vector<void *>> attr(threadCount);
     for (int i = 0; i < attr.size(); i++) {
-        attr[i] = {&trie, new int(i), new int(averageIterationCount)};
+        attr[i] = {&hamt, new int(i), new int(averageIterationCount)};
     }
 
     for (int i = 0; i < thread.size(); i++) {
         pthread_create(&thread[i], nullptr, [](void *args) -> void * {
-            auto *trie = (Trie<int, int> *) (*static_cast<vector<void *> *>(args))[0];
+            auto *hamt = (Hamt<int, int> *) (*static_cast<vector<void *> *>(args))[0];
             int *averageIterationCount = (int *) (*static_cast<vector<void *> *>(args))[1];
 
             for (int i = 0; i < *averageIterationCount; i++) {
-                assert(trie->lookup(i) == LOOKUP_NOT_FOUND);
+                assert(hamt->lookup(i) == (hamt->LOOKUP_NOT_FOUND));
             }
 
             pthread_exit(nullptr);
@@ -437,37 +437,37 @@ TEST(TRIE, HAPPY_FLOW__LOOKING_UP_KEYS_BY_MANY_THREAD) {
 
     // assert
     for (int i = 0; i < averageIterationCount; i++) {
-        ASSERT_EQ(trie.lookup(i), LOOKUP_NOT_FOUND);
+        ASSERT_EQ(hamt.lookup(i), (hamt.LOOKUP_NOT_FOUND));
     }
     for (int i = averageIterationCount; i < averageIterationCount * 10; i++) {
-        ASSERT_EQ(trie.lookup(i), createSuccessfulLookupResult(i));
+        ASSERT_EQ(hamt.lookup(i), (hamt.createSuccessfulLookupResult(i)));
     }
 }
 
 
 TEST(TRIE, HAPPY_FLOW__INSERTING_AND_REMOVING_ONE_ELEMENT_BY_MANY_THREAD) {
     // arrange
-    Trie<int, int> trie;
+    Hamt<int, int> hamt;
     int threadCount = 10;
 
 
     vector<pthread_t> thread(threadCount);
     vector<vector<void *>> attr(threadCount);
     for (int i = 0; i < attr.size(); i++) {
-        attr[i] = {&trie, new int(i), new int(averageIterationCount)};
+        attr[i] = {&hamt, new int(i), new int(averageIterationCount)};
     }
 
     for (int i = 0; i < thread.size(); i++) {
         pthread_create(&thread[i], nullptr, [](void *args) -> void * {
-            auto *trie = (Trie<int, int> *) (*static_cast<vector<void *> *>(args))[0];
+            auto *hamt = (Hamt<int, int> *) (*static_cast<vector<void *> *>(args))[0];
             int *id = (int *) (*static_cast<vector<void *> *>(args))[1];
             int *averageIterationCount = (int *) (*static_cast<vector<void *> *>(args))[2];
 
             for (int i = *id * (*averageIterationCount); i < (*id + 1) * (*averageIterationCount); i++) {
-                assert(trie->insert(i, i) != INSERT_RESTART);
-                assert(trie->lookup(i) == createSuccessfulLookupResult(i));
-                assert(trie->remove(i) == createSuccessfulRemoveResult(i));
-                assert(trie->lookup(i) == LOOKUP_NOT_FOUND);
+                assert(hamt->insert(i, i) != (hamt->INSERT_RESTART));
+                assert(hamt->lookup(i) == (hamt->createSuccessfulLookupResult(i)));
+                assert(hamt->remove(i) == (hamt->createSuccessfulRemoveResult(i)));
+                assert(hamt->lookup(i) == (hamt->LOOKUP_NOT_FOUND));
             }
 
             pthread_exit(nullptr);
@@ -481,31 +481,31 @@ TEST(TRIE, HAPPY_FLOW__INSERTING_AND_REMOVING_ONE_ELEMENT_BY_MANY_THREAD) {
 
     // assert
     for (int i = 0; i < averageIterationCount * threadCount; i++) {
-        ASSERT_EQ(trie.lookup(i), LOOKUP_NOT_FOUND);
+        ASSERT_EQ(hamt.lookup(i), (hamt.LOOKUP_NOT_FOUND));
     }
 }
 
 TEST(TRIE, HAPPY_FLOW__INSERTING_AND_REMOVING_RANDOM_KEY_BY_MANY_THREAD) {
     // arrange
-    Trie<int, int> trie;
+    Hamt<int, int> hamt;
     int threadCount = 10;
 
 
     vector<pthread_t> thread(threadCount);
     vector<vector<void *>> attr(threadCount);
     for (int i = 0; i < attr.size(); i++) {
-        attr[i] = {&trie, new int(averageIterationCount)};
+        attr[i] = {&hamt, new int(averageIterationCount)};
     }
 
     for (int i = 0; i < thread.size(); i++) {
         pthread_create(&thread[i], nullptr, [](void *args) -> void * {
-            auto *trie = (Trie<int, int> *) (*static_cast<vector<void *> *>(args))[0];
+            auto *hamt = (Hamt<int, int> *) (*static_cast<vector<void *> *>(args))[0];
             int *averageIterationCount = (int *) (*static_cast<vector<void *> *>(args))[1];
 
             for (int i = 0; i < *averageIterationCount; i++) {
                 int k = rand() % 100;
-                trie->insert(k, k);
-                trie->remove(k);
+                hamt->insert(k, k);
+                hamt->remove(k);
             }
             pthread_exit(nullptr);
         }, &attr[i]);
@@ -519,25 +519,25 @@ TEST(TRIE, HAPPY_FLOW__INSERTING_AND_REMOVING_RANDOM_KEY_BY_MANY_THREAD) {
 
 TEST(TRIE, HAPPY_FLOW__KEY_INSERTING_AND_REMOVING_SEQUENTALLY_BY_MANY_THREAD) {
     // arrange
-    Trie<int, int> trie;
+    Hamt<int, int> hamt;
     int threadCount = 10;
 
 
     vector<pthread_t> thread(threadCount);
     vector<vector<void *>> attr(threadCount);
     for (int i = 0; i < attr.size(); i++) {
-        attr[i] = {&trie, new int(i), new int(averageIterationCount)};
+        attr[i] = {&hamt, new int(i), new int(averageIterationCount)};
     }
 
     for (int i = 0; i < thread.size(); i++) {
         pthread_create(&thread[i], nullptr, [](void *args) -> void * {
-            auto *trie = (Trie<int, int> *) (*static_cast<vector<void *> *>(args))[0];
+            auto *hamt = (Hamt<int, int> *) (*static_cast<vector<void *> *>(args))[0];
             int *id = (int *) (*static_cast<vector<void *> *>(args))[1];
             int *averageIterationCount = (int *) (*static_cast<vector<void *> *>(args))[2];
 
             for (int i = *id * (*averageIterationCount); i < (*id + 1) * (*averageIterationCount); i++) {
-                trie->insert(i, i);
-                assert(trie->remove(i) == createSuccessfulRemoveResult(i));
+                hamt->insert(i, i);
+                assert(hamt->remove(i) == (hamt->createSuccessfulRemoveResult(i)));
             }
 
             pthread_exit(nullptr);
@@ -551,39 +551,39 @@ TEST(TRIE, HAPPY_FLOW__KEY_INSERTING_AND_REMOVING_SEQUENTALLY_BY_MANY_THREAD) {
 
     // assert
     for (int i = 0; i < averageIterationCount * threadCount; i++) {
-        ASSERT_EQ(trie.lookup(i), LOOKUP_NOT_FOUND);
+        ASSERT_EQ(hamt.lookup(i), (hamt.LOOKUP_NOT_FOUND));
     }
 }
 
 TEST(TRIE, HAPPY_FLOW__KEY_RANDOM_ACTIONS_BY_MANY_THREAD) {
     // arrange & act
-    Trie<int, int> trie;
+    Hamt<int, int> hamt;
     int threadCount = rand() % 8 + 2;
     int averageIterationCount = rand() % 50000;
 
     vector<pthread_t> thread(threadCount);
     vector<vector<void *>> attr(threadCount);
     for (int i = 0; i < attr.size(); i++) {
-        attr[i] = {&trie, new int(averageIterationCount)};
+        attr[i] = {&hamt, new int(averageIterationCount)};
     }
 
     for (int i = 0; i < thread.size(); i++) {
         pthread_create(&thread[i], nullptr, [](void *args) -> void * {
-            auto *trie = (Trie<int, int> *) (*static_cast<vector<void *> *>(args))[0];
+            auto *hamt = (Hamt<int, int> *) (*static_cast<vector<void *> *>(args))[0];
             int *averageIterationCount = (int *) (*static_cast<vector<void *> *>(args))[1];
 
             for (int i = 0; i < *averageIterationCount; i++) {
                 switch (rand() % 3) {
                     case 0: {
-                        trie->insert(i, i);
+                        hamt->insert(i, i);
                         break;
                     }
                     case 1: {
-                        trie->remove(i);
+                        hamt->remove(i);
                         break;
                     }
                     case 2: {
-                        trie->lookup(i);
+                        hamt->lookup(i);
                         break;
                     }
                 }
@@ -598,41 +598,41 @@ TEST(TRIE, HAPPY_FLOW__KEY_RANDOM_ACTIONS_BY_MANY_THREAD) {
         pthread_join(i, nullptr);
     }
     for (int i = 0; i < averageIterationCount; i++) {
-        trie.remove(i);
+        hamt.remove(i);
     }
 
     // assert
     for (int i = 0; i < averageIterationCount; i++) {
-        ASSERT_EQ(trie.lookup(i), LOOKUP_NOT_FOUND);
+        ASSERT_EQ(hamt.lookup(i), (hamt.LOOKUP_NOT_FOUND));
     }
 }
 
 
 TEST(TRIE, HAPPY_FLOW__RANDOM_REMOVING_BY_MANY_THREAD) {
     // arrange
-    Trie<int, int> trie;
+    Hamt<int, int> hamt;
     int threadCount = 5;
 
 
     vector<pthread_t> thread(threadCount);
     vector<vector<void *>> attr(threadCount);
     for (int i = 0; i < attr.size(); i++) {
-        attr[i] = {&trie, new int(i), new int(averageIterationCount)};
+        attr[i] = {&hamt, new int(i), new int(averageIterationCount)};
     }
 
     for (int i = 0; i < thread.size(); i++) {
         pthread_create(&thread[i], nullptr, [](void *args) -> void * {
-            auto *trie = (Trie<int, int> *) (*static_cast<vector<void *> *>(args))[0];
+            auto *hamt = (Hamt<int, int> *) (*static_cast<vector<void *> *>(args))[0];
             int *id = (int *) (*static_cast<vector<void *> *>(args))[1];
             int *averageIterationCount = (int *) (*static_cast<vector<void *> *>(args))[2];
             set<int> keys;
             for (int i = (*id) * (*averageIterationCount); i < (*id + 1) * (*averageIterationCount); i++) {
                 keys.insert(i);
-                trie->insert(i, i);
+                hamt->insert(i, i);
             }
             while (!keys.empty()) {
                 int key = rand() % (*averageIterationCount) + (*id) * (*averageIterationCount);
-                if (trie->remove(key) != createSuccessfulRemoveResult(key)) {
+                if (hamt->remove(key) != (Hamt<int,int>::createSuccessfulRemoveResult(key))) {
                     keys.erase(key);
                 }
             }
@@ -649,35 +649,35 @@ TEST(TRIE, HAPPY_FLOW__RANDOM_REMOVING_BY_MANY_THREAD) {
 
     // assert
     for (int i = 0; i < averageIterationCount; i++) {
-        ASSERT_EQ(trie.lookup(i), LOOKUP_NOT_FOUND);
+        ASSERT_EQ(hamt.lookup(i), (hamt.LOOKUP_NOT_FOUND));
     }
 }
 
 
 TEST(TRIE, HAPPY_FLOW__INSERTING_THE_SAME_KEY_MANY_TIMES_BY_MANY_THREAD) {
     // arrange
-    Trie<int, int> trie;
+    Hamt<int, int> hamt;
     int threadCount = 10;
 
 
     vector<pthread_t> thread(threadCount);
     vector<vector<void *>> attr(threadCount);
     for (int i = 0; i < attr.size(); i++) {
-        attr[i] = {&trie, new int(i), new int(averageIterationCount)};
+        attr[i] = {&hamt, new int(i), new int(averageIterationCount)};
     }
 
     for (int i = 1; i < 100000; i++) {
-        trie.insert(i, i);
+        hamt.insert(i, i);
     }
 
     for (int i = 0; i < thread.size(); i++) {
         pthread_create(&thread[i], nullptr, [](void *args) -> void * {
-            auto *trie = (Trie<int, int> *) (*static_cast<vector<void *> *>(args))[0];
+            auto *hamt = (Hamt<int, int> *) (*static_cast<vector<void *> *>(args))[0];
             int *id = (int *) (*static_cast<vector<void *> *>(args))[1];
             int *averageIterationCount = (int *) (*static_cast<vector<void *> *>(args))[2];
 
             for (int i = 0; i < *averageIterationCount; i++) {
-                trie->insert(0, *id);
+                hamt->insert(0, *id);
             }
 
             pthread_exit(nullptr);
@@ -690,9 +690,9 @@ TEST(TRIE, HAPPY_FLOW__INSERTING_THE_SAME_KEY_MANY_TIMES_BY_MANY_THREAD) {
     }
 
     // assert
-    ASSERT_NE(trie.lookup(0), LOOKUP_NOT_FOUND);
-    ASSERT_LT(trie.lookup(0).value, thread.size());
-    ASSERT_GE(trie.lookup(0).value, 0);
+    ASSERT_NE(hamt.lookup(0), (hamt.LOOKUP_NOT_FOUND));
+    ASSERT_LT(hamt.lookup(0).value, thread.size());
+    ASSERT_GE(hamt.lookup(0).value, 0);
 }
 
 

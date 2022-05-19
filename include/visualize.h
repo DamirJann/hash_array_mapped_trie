@@ -1,7 +1,7 @@
 #define protected public
 #define private   public
 
-#include "trie.h"
+#include "hamt.h"
 
 #undef protected
 #undef private
@@ -25,30 +25,30 @@ string toString(string k) {
 
 template<class K, class V>
 struct Height {
-    Height(Node *v) {
+    Height(typename Hamt<K, V>::Node *v) {
         this->v = v;
         id = counter++;
     }
 
     int id;
-    Node *v{};
+    typename Hamt<K, V>::Node *v{};
 
     string getLabel() {
         switch (v->type) {
-            case INODE: {
+            case  INODE: {
                 return "I" + to_string(id);
             }
-            case CNODE: {
+            case  CNODE: {
                 string label = "C" + to_string(id);
-                if (static_cast<CNode<K, V> *>(v)->isTomb) {
+                if (static_cast<typename Hamt<K, V>::CNode *>(v)->isTomb) {
                     label += " - tombed";
                 }
                 return label;
             }
             case SNODE: {
                 string label = "";
-                label += "hs: " + to_string(static_cast<SNode<K, V> *>(this->v)->getHash()) + "\n\n";
-                for (auto &p: static_cast<SNode<K, V> *>(v)->pair) {
+                label += "hs: " + to_string(static_cast<typename Hamt<K, V>::SNode *>(this->v)->getHash()) + "\n\n";
+                for (auto &p: static_cast<typename Hamt<K, V>::SNode *>(v)->pair) {
                     label += "(" + toString(p.key) + ", " + toString(p.value) + ") \n";
                 }
                 return label;
@@ -67,17 +67,17 @@ struct Edge {
 };
 
 template<class K, class V>
-void walk_and_collect(Height<K, V> currHeight, vector<Height<K, V>> &hs, vector<Edge> &es) {
+void walk_and_collect(Height<K,V> currHeight, vector<Height<K,V>> &hs, vector<Edge> &es) {
     if (currHeight.v->type == INODE) {
-        Height<K, V> c(static_cast<INode<K, V> *>(currHeight.v)->main);
+        Height<K,V> c(static_cast<typename Hamt<K, V>::INode*>(currHeight.v)->main);
         hs.push_back(c);
 
         es.push_back({"", currHeight.id, c.id});
 
         for (uint8_t path = 0b00000; path < 0b100000; path++) {
-            auto *n = reinterpret_cast<CNode<K, V> *>(c.v);
+            auto *n = reinterpret_cast<typename Hamt<K, V>::CNode *>(c.v);
             if (n->getSubNode(path) != nullptr) {
-                Height<K, V> child(n->getSubNode(path));
+                Height<K,V> child(n->getSubNode(path));
                 hs.push_back(child);
                 es.push_back({to_string(path), c.id, child.id});
                 walk_and_collect(child, hs, es);
@@ -88,8 +88,8 @@ void walk_and_collect(Height<K, V> currHeight, vector<Height<K, V>> &hs, vector<
 
 
 template<class K, class V>
-void visualize(ofstream &f, Trie<K, V> *trie) {
-    vector<Height<K, V>> heights = {trie->getRoot()};
+void visualize(ofstream &f, Hamt<K,V> *trie) {
+    vector<Height<K,V>> heights = {trie->getRoot()};
     vector<Edge> edges;
     walk_and_collect(heights[0], heights, edges);
 
