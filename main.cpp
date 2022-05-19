@@ -12,12 +12,13 @@ int main(){
     int count = 34;
 
     // act & assert
-    for (int i = 0; i < count; i++) {
-        hamt.insert(i, i);
+    for (int i = 30; i < count; i++) {
+        hamt.insert((i*i*i)%10, i);
     }
+    hamt.insert(40, 8);
 //
     for (int i = 0; i < count; i++) {
-        assert(hamt.lookup(i) == hamt.createSuccessfulLookupResult(i));
+//        assert(hamt.lookup(i) == hamt.createSuccessfulLookupResult(i));
     }
 
 //    hamt.remove(0);
