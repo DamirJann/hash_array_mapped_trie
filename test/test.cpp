@@ -157,13 +157,14 @@ TEST(TRIE, HAPPY_FLOW__INSERT_TWO_KEYS_WITH_EQUAL_HASH) {
     Hamt<string, int> hamt;
 
     // act
-    hamt.insert("k71", 1);
-    hamt.insert("k90", 2);
+    auto equalHash = findTwoKeyWithEqualHash();
+    hamt.insert(equalHash.first, 1);
+    hamt.insert(equalHash.second, 2);
 
-    // assert
 
-    ASSERT_EQ(hamt.lookup("k71"), (hamt.createSuccessfulLookupResult(1)));
-    ASSERT_EQ(hamt.lookup("k90"), (hamt.createSuccessfulLookupResult(2)));
+
+    ASSERT_EQ(hamt.lookup(equalHash.first), (hamt.createSuccessfulLookupResult(1)));
+    ASSERT_EQ(hamt.lookup(equalHash.second), (hamt.createSuccessfulLookupResult(2)));
 }
 
 TEST(TRIE, HAPPY_FLOW__CONTRACTED_CHECK_WITH_THREE_KEYS) {

@@ -1,5 +1,6 @@
 #include "../include/utils.h"
 
+
 uint64_t generateSimpleHash(uint64_t key){
     return key;
 }
@@ -9,7 +10,8 @@ uint64_t generateSimpleHash(string key) {
     for (size_t i = 0; i < key.size(); i++) {
         hash += key[i] * i;
     }
-    return hash;
+
+    return hash % 1321;
 }
 
 uint8_t extractHashPartByLevel(uint64_t hash, uint8_t level) {
@@ -27,3 +29,15 @@ void Bitmap::set(uint8_t pos) {
 void Bitmap::unset(uint8_t pos) {
     data = data & (~(1 << pos));
 }
+
+std::pair<string, string>  findTwoKeyWithEqualHash(){
+    std::pair<string, string> res;
+    res.first = "k0";
+    res.second = "k1";
+    int i = 2;
+    while (generateSimpleHash(res.first) != generateSimpleHash(res.second)){
+        res.second = "k" + to_string(i);
+        i++;
+    }
+    return res;
+};

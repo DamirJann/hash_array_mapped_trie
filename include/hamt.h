@@ -467,9 +467,9 @@ private:
                 return currentNode->main.compare_exchange_strong(m, updated) ? INSERT_SUCCESSFUL : INSERT_RESTART;
             }
         } else if (subNode->type == INODE) {
+            fprintf(stderr, "Node with unknown type\n");
             return insert(static_cast<INode *>(subNode), currentNode, newNode, level + 1);
         } else {
-            fprintf(stderr, "Node with unknown type\n");
             assert(false);
             return INSERT_RESTART;
         }
