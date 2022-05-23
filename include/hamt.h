@@ -462,21 +462,17 @@ private:
             if (s->contains(newNode)) {
                 transformToWithReplacedPair(updated, s, newNode, path);
                 updated->isTomb = isTombed(updated, root, currentNode);
-                res = currentNode->main.compare_exchange_strong(m, updated) ? INSERT_SUCCESSFUL : INSERT_RESTART;
             } else if (level == MAX_LEVEL_COUNT) {
                 transformToWithMergedChild(updated, s, newNode, path);
                 updated->isTomb = isTombed(updated, root, currentNode);
-                return currentNode->main.compare_exchange_strong(m, updated) ? INSERT_SUCCESSFUL : INSERT_RESTART;
             } else {
                 transformToWithDownChild(updated, newNode, s, level, path);
                 updated->isTomb = isTombed(updated, root, currentNode);
-                return currentNode->main.compare_exchange_strong(m, updated) ? INSERT_SUCCESSFUL : INSERT_RESTART;
             }
-        } else if (subNode->type == INODE) {
+            res = currentNode->main.compare_exchange_strong(m, updated) ? INSERT_SUCCESSFUL : INSERT_RESTART;
+        }
+        else if (subNode->type == INODE){
             res = insert(static_cast<INode *>(subNode), currentNode, newNode, level + 1);
-        } else {
-            assert(false);
-            return INSERT_RESTART;
         }
 
         if (res == INSERT_RESTART){
