@@ -153,12 +153,17 @@ public:
         };
 
         V value;
-        const Status status;
+        Status status;
 
         bool operator==(InsertResult b) const {
             if ((status == Status::Failed) && (b.status == Status::Failed)) return true;
             if ((status == Status::Inserted) && (b.status == Status::Inserted)) return true;
             return false;
+        }
+
+        void operator=(InsertResult b){
+            this->status = b.status;
+            this->value = value;
         }
 
         bool operator!=(InsertResult b) const {
@@ -402,7 +407,7 @@ private:
             return REMOVE_RESTART;
         }
 
-        CNode *updated = getCopy(m);
+        auto *updated = new CNode(*m);
         uint8_t path = extractHashPartByLevel(hash, level);
         Node *subNode = updated->getSubNode(path);
 
@@ -426,6 +431,7 @@ private:
         }
 
         if (res == REMOVE_NOT_FOUND || res == REMOVE_RESTART) {
+            delete updated;
             return res;
         }
 
@@ -442,21 +448,21 @@ private:
             return INSERT_RESTART;
         }
 
-        CNode *updated = getCopy(m);
+        auto *updated = new CNode(*m);
         uint8_t path = extractHashPartByLevel(newNode->getHash(), level);
-
+        InsertResult res{};
 
         Node *subNode = updated->getSubNode(path);
         if (subNode == nullptr) {
             transformToWithInsertedChild(updated, newNode, path);
             updated->isTomb = isTombed(updated, root, currentNode);
-            return currentNode->main.compare_exchange_strong(m, updated) ? INSERT_SUCCESSFUL : INSERT_RESTART;
+            res = currentNode->main.compare_exchange_strong(m, updated) ? INSERT_SUCCESSFUL : INSERT_RESTART;
         } else if (subNode->type == SNODE) {
             auto *s = static_cast<SNode *>(subNode);
             if (s->contains(newNode)) {
                 transformToWithReplacedPair(updated, s, newNode, path);
                 updated->isTomb = isTombed(updated, root, currentNode);
-                return currentNode->main.compare_exchange_strong(m, updated) ? INSERT_SUCCESSFUL : INSERT_RESTART;
+                res = currentNode->main.compare_exchange_strong(m, updated) ? INSERT_SUCCESSFUL : INSERT_RESTART;
             } else if (level == MAX_LEVEL_COUNT) {
                 transformToWithMergedChild(updated, s, newNode, path);
                 updated->isTomb = isTombed(updated, root, currentNode);
@@ -467,11 +473,16 @@ private:
                 return currentNode->main.compare_exchange_strong(m, updated) ? INSERT_SUCCESSFUL : INSERT_RESTART;
             }
         } else if (subNode->type == INODE) {
-            fprintf(stderr, "Node with unknown type\n");
-            return insert(static_cast<INode *>(subNode), currentNode, newNode, level + 1);
+            res = insert(static_cast<INode *>(subNode), currentNode, newNode, level + 1);
         } else {
             assert(false);
             return INSERT_RESTART;
         }
+
+        if (res == INSERT_RESTART){
+            delete updated;
+        }
+
+        return res;
     }
 };
