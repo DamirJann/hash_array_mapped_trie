@@ -161,7 +161,7 @@ public:
             return false;
         }
 
-        void operator=(InsertResult b){
+        void operator=(InsertResult b) {
             this->status = b.status;
             this->value = value;
         }
@@ -244,7 +244,6 @@ public:
     }
 
 
-
     void transformToContractedParent(CNode *updated, CNode *m, uint8_t path) {
         updated->replaceChild(m->getFirstChild(), path);
     }
@@ -320,7 +319,7 @@ public:
 
         auto *updated = new CNode(*pm);
         transformToContractedParent(updated, m, extractHashPartByLevel(hash, level - 1));
-        if (!parent->main.compare_exchange_strong(pm, updated)){
+        if (!parent->main.compare_exchange_strong(pm, updated)) {
             delete updated;
         }
         return true;
@@ -455,6 +454,9 @@ private:
             transformToWithInsertedChild(updated, newNode, path);
             updated->isTomb = isTombed(updated, root, currentNode);
             res = currentNode->main.compare_exchange_strong(m, updated) ? INSERT_SUCCESSFUL : INSERT_RESTART;
+//            if (res == INSERT_SUCCESSFUL) {
+//                delete m;
+//            }
         } else if (subNode->type == SNODE) {
             auto *s = static_cast<SNode *>(subNode);
             if (s->contains(newNode)) {
@@ -468,12 +470,14 @@ private:
                 updated->isTomb = isTombed(updated, root, currentNode);
             }
             res = currentNode->main.compare_exchange_strong(m, updated) ? INSERT_SUCCESSFUL : INSERT_RESTART;
-        }
-        else if (subNode->type == INODE){
+//            if (res == INSERT_SUCCESSFUL) {
+//                delete m;
+//            }
+        } else if (subNode->type == INODE) {
             res = insert(static_cast<INode *>(subNode), currentNode, newNode, level + 1);
         }
 
-        if (res == INSERT_RESTART){
+        if (res == INSERT_RESTART) {
             delete updated;
         }
 
