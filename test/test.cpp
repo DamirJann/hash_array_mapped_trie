@@ -121,7 +121,7 @@ TEST(CNode, HAPPY_FLOW__GET_COPY) {
     c1->insertChild(k, 4);
 
     // act
-    Hamt<int, int>::CNode *c2 = Hamt<int,int>::getCopy(c1);
+    auto *c2 = new Hamt<int,int>::CNode(*c1);
 
     // assert
     ASSERT_NE(c1, c2);

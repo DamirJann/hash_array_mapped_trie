@@ -243,9 +243,7 @@ public:
         return merged;
     }
 
-    static CNode *getCopy(CNode *node) {
-        return new CNode(*node);
-    }
+
 
     void transformToContractedParent(CNode *updated, CNode *m, uint8_t path) {
         updated->replaceChild(m->getFirstChild(), path);
@@ -320,14 +318,12 @@ public:
             return true;
         }
 
-        CNode *updated = getCopy(pm);
+        auto *updated = new CNode(*pm);
         transformToContractedParent(updated, m, extractHashPartByLevel(hash, level - 1));
-        parent->main.compare_exchange_strong(pm, updated);
+        if (!parent->main.compare_exchange_strong(pm, updated)){
+            delete updated;
+        }
         return true;
-    }
-
-    Node *getRoot() {
-        return this->root;
     }
 
     LookupResult lookup(K key) {
@@ -356,17 +352,19 @@ public:
     }
 
     InsertResult insert(K key, V value) {
+        auto *s = new SNode(key, value);
         while (true) {
             CNode *old = root->main.load();
             if (old == nullptr) {
                 auto *c = new CNode();
-                auto *s = new SNode(key, value);
                 c->insertChild(s, extractHashPartByLevel(s->getHash(), 0));
                 if (root->main.compare_exchange_strong(old, c)) {
                     return InsertResult{.status = InsertResult::Status::Inserted};
+                } else {
+                    delete c;
                 }
             } else {
-                InsertResult res = insert(root, nullptr, new SNode(key, value), 0);
+                InsertResult res = insert(root, nullptr, s, 0);
                 if (res != INSERT_RESTART) {
                     return res;
                 }
