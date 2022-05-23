@@ -11,7 +11,7 @@
 #include <gtest/gtest.h>
 #include <random>
 
-int averageIterationCount = 70000;
+int averageIterationCount = 100000;
 
 TEST(BITMAP, HAPPY_FLOW__IS_SET_TRUE_AT_THE_BEGINNING_OF_BITMAP) {
     // arrange
