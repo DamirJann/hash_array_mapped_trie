@@ -11,7 +11,7 @@ uint64_t generateSimpleHash(string key) {
         hash += key[i] * i;
     }
 
-    return hash % 1321;
+    return hash % 10000;
 }
 
 uint8_t extractHashPartByLevel(uint64_t hash, uint8_t level) {
@@ -32,12 +32,14 @@ void Bitmap::unset(uint8_t pos) {
 
 std::pair<string, string>  findTwoKeyWithEqualHash(){
     std::pair<string, string> res;
-    res.first = "k0";
+    res.first = "k11333131";
     res.second = "k1";
-    int i = 2;
-    while (generateSimpleHash(res.first) != generateSimpleHash(res.second)){
-        res.second = "k" + to_string(i);
-        i++;
-    }
+    uint64_t hs = generateSimpleHash(res.first);
+    int i = 16;
+//    while (hs != generateSimpleHash(res.second)){
+////        res.second = "k" + to_string(i);
+////        cout <<second << endl;
+////        i++;
+//    }
     return res;
 };

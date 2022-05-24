@@ -24,6 +24,10 @@ public:
         root = new INode(nullptr);
     }
 
+    ~Hamt(){
+        dealloc(root);
+    }
+
     class Node {
     public:
         NodeType type;
@@ -145,6 +149,24 @@ public:
         atomic<CNode *> main;
     };
 
+    void dealloc(Node* n){
+        if (n->type == CNODE){
+            auto *s = static_cast<CNode*>(n);
+            for (int i = 0; i < 32; i++){
+                if (s->getSubNode(i) != NULL){
+                    dealloc(s->getSubNode(i));
+                }
+            }
+        } else if (n->type == INODE){
+            auto *i = static_cast<INode*>(n);
+            dealloc(i->main.load());
+        }
+        delete n;
+    }
+
+    Node *getRoot() {
+        return this->root;
+    }
 
     struct InsertResult {
         enum class Status {
@@ -234,13 +256,12 @@ public:
     }
 
     SNode *leftMerge(SNode *node1, SNode *node2) {
-        auto *merged = new SNode(*node1);
         for (auto &p: node2->pair) {
-            if (!merged->contains(p.key)) {
-                merged->pair.insert(p);
+            if (!node1->contains(p.key)) {
+                node1->pair.insert(p);
             }
         }
-        return merged;
+        return node1;
     }
 
 
@@ -428,7 +449,7 @@ private:
         }
 
         if (res == REMOVE_NOT_FOUND || res == REMOVE_RESTART) {
-            delete updated;
+//            delete updated;
             return res;
         }
 
@@ -454,33 +475,32 @@ private:
             transformToWithInsertedChild(updated, newNode, path);
             updated->isTomb = isTombed(updated, root, currentNode);
             res = currentNode->main.compare_exchange_strong(m, updated) ? INSERT_SUCCESSFUL : INSERT_RESTART;
-//            if (res == INSERT_SUCCESSFUL) {
-//                delete m;
-//            }
+            if (res == INSERT_RESTART) {
+                delete updated;
+            }
         } else if (subNode->type == SNODE) {
             auto *s = static_cast<SNode *>(subNode);
             if (s->contains(newNode)) {
                 transformToWithReplacedPair(updated, s, newNode, path);
                 updated->isTomb = isTombed(updated, root, currentNode);
+                res = currentNode->main.compare_exchange_strong(m, updated) ? INSERT_SUCCESSFUL : INSERT_RESTART;
             } else if (level == MAX_LEVEL_COUNT) {
                 transformToWithMergedChild(updated, s, newNode, path);
                 updated->isTomb = isTombed(updated, root, currentNode);
+                res = currentNode->main.compare_exchange_strong(m, updated) ? INSERT_SUCCESSFUL : INSERT_RESTART;
             } else {
                 transformToWithDownChild(updated, newNode, s, level, path);
                 updated->isTomb = isTombed(updated, root, currentNode);
+                res = currentNode->main.compare_exchange_strong(m, updated) ? INSERT_SUCCESSFUL : INSERT_RESTART;
             }
-            res = currentNode->main.compare_exchange_strong(m, updated) ? INSERT_SUCCESSFUL : INSERT_RESTART;
-//            if (res == INSERT_SUCCESSFUL) {
-//                delete m;
-//            }
+
+            if (res == INSERT_RESTART) {
+                delete updated;
+            }
         } else if (subNode->type == INODE) {
             res = insert(static_cast<INode *>(subNode), currentNode, newNode, level + 1);
-        }
-
-        if (res == INSERT_RESTART) {
             delete updated;
         }
-
         return res;
     }
 };
