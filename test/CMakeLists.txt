@@ -15,9 +15,9 @@ add_executable(
         unit_test unit_test.cpp ../src/utils.cpp
 )
 
-add_executable(
-        benchmark_test benchmark_test.cpp ../src/utils.cpp
-)
+#add_executable(
+#        benchmark_test benchmark_test.cpp ../src/utils.cpp
+#)
 
 
 target_link_libraries(
@@ -26,8 +26,8 @@ target_link_libraries(
 )
 
 
-target_link_libraries(
-        benchmark_test
-        cds
-        libbenchmark.a
-)
+#target_link_libraries(
+#        benchmark_test
+#        cds
+#        libbenchmark.a
+#)
