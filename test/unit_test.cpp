@@ -11,7 +11,7 @@
 #include <gtest/gtest.h>
 #include <random>
 
-int averageIterationCount = 20000;
+int averageIterationCount = 120'000;
 
 TEST(BITMAP, HAPPY_FLOW__IS_SET_TRUE_AT_THE_BEGINNING_OF_BITMAP) {
     // arrange
@@ -121,7 +121,7 @@ TEST(CNode, HAPPY_FLOW__GET_COPY) {
     c1->insertChild(k, 4);
 
     // act
-    Hamt<int, int>::CNode *c2 = Hamt<int,int>::getCopy(c1);
+    auto *c2 = new Hamt<int,int>::CNode(*c1);
 
     // assert
     ASSERT_NE(c1, c2);
@@ -157,13 +157,14 @@ TEST(TRIE, HAPPY_FLOW__INSERT_TWO_KEYS_WITH_EQUAL_HASH) {
     Hamt<string, int> hamt;
 
     // act
-    hamt.insert("k71", 1);
-    hamt.insert("k90", 2);
+    auto equalHash = findTwoKeyWithEqualHash();
+    hamt.insert(equalHash.first, 1);
+    hamt.insert(equalHash.second, 2);
 
-    // assert
 
-    ASSERT_EQ(hamt.lookup("k71"), (hamt.createSuccessfulLookupResult(1)));
-    ASSERT_EQ(hamt.lookup("k90"), (hamt.createSuccessfulLookupResult(2)));
+
+    ASSERT_EQ(hamt.lookup(equalHash.first), (hamt.createSuccessfulLookupResult(1)));
+    ASSERT_EQ(hamt.lookup(equalHash.second), (hamt.createSuccessfulLookupResult(2)));
 }
 
 TEST(TRIE, HAPPY_FLOW__CONTRACTED_CHECK_WITH_THREE_KEYS) {
@@ -445,45 +446,6 @@ TEST(TRIE, HAPPY_FLOW__LOOKING_UP_KEYS_BY_MANY_THREAD) {
 }
 
 
-TEST(TRIE, HAPPY_FLOW__INSERTING_AND_REMOVING_ONE_ELEMENT_BY_MANY_THREAD) {
-    // arrange
-    Hamt<int, int> hamt;
-    int threadCount = 10;
-
-
-    vector<pthread_t> thread(threadCount);
-    vector<vector<void *>> attr(threadCount);
-    for (int i = 0; i < attr.size(); i++) {
-        attr[i] = {&hamt, new int(i), new int(averageIterationCount)};
-    }
-
-    for (int i = 0; i < thread.size(); i++) {
-        pthread_create(&thread[i], nullptr, [](void *args) -> void * {
-            auto *hamt = (Hamt<int, int> *) (*static_cast<vector<void *> *>(args))[0];
-            int *id = (int *) (*static_cast<vector<void *> *>(args))[1];
-            int *averageIterationCount = (int *) (*static_cast<vector<void *> *>(args))[2];
-
-            for (int i = *id * (*averageIterationCount); i < (*id + 1) * (*averageIterationCount); i++) {
-                assert(hamt->insert(i, i) != (hamt->INSERT_RESTART));
-                assert(hamt->lookup(i) == (hamt->createSuccessfulLookupResult(i)));
-                assert(hamt->remove(i) == (hamt->createSuccessfulRemoveResult(i)));
-                assert(hamt->lookup(i) == (hamt->LOOKUP_NOT_FOUND));
-            }
-
-            pthread_exit(nullptr);
-        }, &attr[i]);
-
-    }
-
-    for (unsigned long i: thread) {
-        pthread_join(i, nullptr);
-    }
-
-    // assert
-    for (int i = 0; i < averageIterationCount * threadCount; i++) {
-        ASSERT_EQ(hamt.lookup(i), (hamt.LOOKUP_NOT_FOUND));
-    }
-}
 
 TEST(TRIE, HAPPY_FLOW__INSERTING_AND_REMOVING_RANDOM_KEY_BY_MANY_THREAD) {
     // arrange
@@ -666,7 +628,7 @@ TEST(TRIE, HAPPY_FLOW__INSERTING_THE_SAME_KEY_MANY_TIMES_BY_MANY_THREAD) {
         attr[i] = {&hamt, new int(i), new int(averageIterationCount)};
     }
 
-    for (int i = 1; i < 100000; i++) {
+    for (int i = 1; i < averageIterationCount * threadCount / 2; i++) {
         hamt.insert(i, i);
     }
 
@@ -694,6 +656,47 @@ TEST(TRIE, HAPPY_FLOW__INSERTING_THE_SAME_KEY_MANY_TIMES_BY_MANY_THREAD) {
     ASSERT_LT(hamt.lookup(0).value, thread.size());
     ASSERT_GE(hamt.lookup(0).value, 0);
 }
+
+TEST(TRIE, HAPPY_FLOW__INSERTING_AND_REMOVING_ONE_ELEMENT_BY_MANY_THREAD) {
+    // arrange
+    Hamt<int, int> hamt;
+    int threadCount = 10;
+
+
+    vector<pthread_t> thread(threadCount);
+    vector<vector<void *>> attr(threadCount);
+    for (int i = 0; i < attr.size(); i++) {
+        attr[i] = {&hamt, new int(i), new int(averageIterationCount)};
+    }
+
+    for (int i = 0; i < thread.size(); i++) {
+        pthread_create(&thread[i], nullptr, [](void *args) -> void * {
+            auto *hamt = (Hamt<int, int> *) (*static_cast<vector<void *> *>(args))[0];
+            int *id = (int *) (*static_cast<vector<void *> *>(args))[1];
+            int *averageIterationCount = (int *) (*static_cast<vector<void *> *>(args))[2];
+
+            for (int i = *id * (*averageIterationCount); i < (*id + 1) * (*averageIterationCount); i++) {
+                assert(hamt->insert(i, i) != (hamt->INSERT_RESTART));
+                assert(hamt->lookup(i) == (hamt->createSuccessfulLookupResult(i)));
+                assert(hamt->remove(i) == (hamt->createSuccessfulRemoveResult(i)));
+                assert(hamt->lookup(i) == (hamt->LOOKUP_NOT_FOUND));
+            }
+
+            pthread_exit(nullptr);
+        }, &attr[i]);
+
+    }
+
+    for (unsigned long i: thread) {
+        pthread_join(i, nullptr);
+    }
+
+    // assert
+    for (int i = 0; i < averageIterationCount * threadCount; i++) {
+        ASSERT_EQ(hamt.lookup(i), (hamt.LOOKUP_NOT_FOUND));
+    }
+}
+
 
 
 

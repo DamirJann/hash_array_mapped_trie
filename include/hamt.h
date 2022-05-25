@@ -24,6 +24,10 @@ public:
         root = new INode(nullptr);
     }
 
+    ~Hamt(){
+        dealloc(root);
+    }
+
     class Node {
     public:
         NodeType type;
@@ -145,6 +149,24 @@ public:
         atomic<CNode *> main;
     };
 
+    void dealloc(Node* n){
+        if (n->type == CNODE){
+            auto *s = static_cast<CNode*>(n);
+            for (int i = 0; i < 32; i++){
+                if (s->getSubNode(i) != NULL){
+                    dealloc(s->getSubNode(i));
+                }
+            }
+        } else if (n->type == INODE){
+            auto *i = static_cast<INode*>(n);
+            dealloc(i->main.load());
+        }
+        delete n;
+    }
+
+    Node *getRoot() {
+        return this->root;
+    }
 
     struct InsertResult {
         enum class Status {
@@ -153,12 +175,17 @@ public:
         };
 
         V value;
-        const Status status;
+        Status status;
 
         bool operator==(InsertResult b) const {
             if ((status == Status::Failed) && (b.status == Status::Failed)) return true;
             if ((status == Status::Inserted) && (b.status == Status::Inserted)) return true;
             return false;
+        }
+
+        void operator=(InsertResult b) {
+            this->status = b.status;
+            this->value = value;
         }
 
         bool operator!=(InsertResult b) const {
@@ -229,18 +256,14 @@ public:
     }
 
     SNode *leftMerge(SNode *node1, SNode *node2) {
-        auto *merged = new SNode(*node1);
         for (auto &p: node2->pair) {
-            if (!merged->contains(p.key)) {
-                merged->pair.insert(p);
+            if (!node1->contains(p.key)) {
+                node1->pair.insert(p);
             }
         }
-        return merged;
+        return node1;
     }
 
-    static CNode *getCopy(CNode *node) {
-        return new CNode(*node);
-    }
 
     void transformToContractedParent(CNode *updated, CNode *m, uint8_t path) {
         updated->replaceChild(m->getFirstChild(), path);
@@ -315,14 +338,12 @@ public:
             return true;
         }
 
-        CNode *updated = getCopy(pm);
+        auto *updated = new CNode(*pm);
         transformToContractedParent(updated, m, extractHashPartByLevel(hash, level - 1));
-        parent->main.compare_exchange_strong(pm, updated);
+        if (!parent->main.compare_exchange_strong(pm, updated)) {
+            delete updated;
+        }
         return true;
-    }
-
-    Node *getRoot() {
-        return this->root;
     }
 
     LookupResult lookup(K key) {
@@ -351,17 +372,19 @@ public:
     }
 
     InsertResult insert(K key, V value) {
+        auto *s = new SNode(key, value);
         while (true) {
             CNode *old = root->main.load();
             if (old == nullptr) {
                 auto *c = new CNode();
-                auto *s = new SNode(key, value);
                 c->insertChild(s, extractHashPartByLevel(s->getHash(), 0));
                 if (root->main.compare_exchange_strong(old, c)) {
                     return InsertResult{.status = InsertResult::Status::Inserted};
+                } else {
+                    delete c;
                 }
             } else {
-                InsertResult res = insert(root, nullptr, new SNode(key, value), 0);
+                InsertResult res = insert(root, nullptr, s, 0);
                 if (res != INSERT_RESTART) {
                     return res;
                 }
@@ -402,7 +425,7 @@ private:
             return REMOVE_RESTART;
         }
 
-        CNode *updated = getCopy(m);
+        auto *updated = new CNode(*m);
         uint8_t path = extractHashPartByLevel(hash, level);
         Node *subNode = updated->getSubNode(path);
 
@@ -426,6 +449,7 @@ private:
         }
 
         if (res == REMOVE_NOT_FOUND || res == REMOVE_RESTART) {
+//            delete updated;
             return res;
         }
 
@@ -442,36 +466,41 @@ private:
             return INSERT_RESTART;
         }
 
-        CNode *updated = getCopy(m);
+        auto *updated = new CNode(*m);
         uint8_t path = extractHashPartByLevel(newNode->getHash(), level);
-
+        InsertResult res{};
 
         Node *subNode = updated->getSubNode(path);
         if (subNode == nullptr) {
             transformToWithInsertedChild(updated, newNode, path);
             updated->isTomb = isTombed(updated, root, currentNode);
-            return currentNode->main.compare_exchange_strong(m, updated) ? INSERT_SUCCESSFUL : INSERT_RESTART;
+            res = currentNode->main.compare_exchange_strong(m, updated) ? INSERT_SUCCESSFUL : INSERT_RESTART;
+            if (res == INSERT_RESTART) {
+                delete updated;
+            }
         } else if (subNode->type == SNODE) {
             auto *s = static_cast<SNode *>(subNode);
             if (s->contains(newNode)) {
                 transformToWithReplacedPair(updated, s, newNode, path);
                 updated->isTomb = isTombed(updated, root, currentNode);
-                return currentNode->main.compare_exchange_strong(m, updated) ? INSERT_SUCCESSFUL : INSERT_RESTART;
+                res = currentNode->main.compare_exchange_strong(m, updated) ? INSERT_SUCCESSFUL : INSERT_RESTART;
             } else if (level == MAX_LEVEL_COUNT) {
                 transformToWithMergedChild(updated, s, newNode, path);
                 updated->isTomb = isTombed(updated, root, currentNode);
-                return currentNode->main.compare_exchange_strong(m, updated) ? INSERT_SUCCESSFUL : INSERT_RESTART;
+                res = currentNode->main.compare_exchange_strong(m, updated) ? INSERT_SUCCESSFUL : INSERT_RESTART;
             } else {
                 transformToWithDownChild(updated, newNode, s, level, path);
                 updated->isTomb = isTombed(updated, root, currentNode);
-                return currentNode->main.compare_exchange_strong(m, updated) ? INSERT_SUCCESSFUL : INSERT_RESTART;
+                res = currentNode->main.compare_exchange_strong(m, updated) ? INSERT_SUCCESSFUL : INSERT_RESTART;
+            }
+
+            if (res == INSERT_RESTART) {
+                delete updated;
             }
         } else if (subNode->type == INODE) {
-            return insert(static_cast<INode *>(subNode), currentNode, newNode, level + 1);
-        } else {
-            fprintf(stderr, "Node with unknown type\n");
-            assert(false);
-            return INSERT_RESTART;
+            res = insert(static_cast<INode *>(subNode), currentNode, newNode, level + 1);
+            delete updated;
         }
+        return res;
     }
 };
