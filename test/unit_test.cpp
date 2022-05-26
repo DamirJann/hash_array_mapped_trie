@@ -11,7 +11,7 @@
 #include <gtest/gtest.h>
 #include <random>
 
-int averageIterationCount = 120'000;
+int averageIterationCount = 100'000;
 
 TEST(BITMAP, HAPPY_FLOW__IS_SET_TRUE_AT_THE_BEGINNING_OF_BITMAP) {
     // arrange
@@ -171,7 +171,7 @@ TEST(TRIE, HAPPY_FLOW__CONTRACTED_CHECK_WITH_THREE_KEYS) {
     // arrange
     Hamt<int, int> hamt;
 
-    // act & act
+    // act & assert
     hamt.insert(0b00000, 1);
     hamt.insert(0b00001, 2);
     hamt.insert(0b100001, 3);
