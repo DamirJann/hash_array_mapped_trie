@@ -23,7 +23,8 @@ public:
     atomic<int> it;
 
     Hamt() {
-        mem = (Node**)malloc(1000000000);
+//        cout << "allocated " << memSize << " bytes" << endl;
+        mem = (Node**)malloc(memSize);
         it.store(-1);
         root = new INode(nullptr);
         addNewPtr(root);
@@ -35,6 +36,7 @@ public:
             delete (*(mem + i))  ;
         }
         free (mem);
+//        cout << "deallocated " << it.load() * 8 << " bytes" << endl;
     }
 
     class Node {
@@ -174,10 +176,13 @@ public:
     }
 
     Node** mem;
+    size_t memSize = 1'000'000'000;
 
 
     void addNewPtr(Node* ptr){
         size_t cur_it = ++it;
+        assert(cur_it * 8 < memSize);
+//        cout << "offset = " << cur_it * 8 << endl;
         *(mem + cur_it) = ptr;
     }
 
@@ -362,9 +367,12 @@ public:
         }
 
         auto *updated = new CNode(*pm);
-        addNewPtr(updated);
         transformToContractedParent(updated, m, extractHashPartByLevel(hash, level - 1));
-        parent->main.compare_exchange_strong(pm, updated);
+        if (parent->main.compare_exchange_strong(pm, updated)){
+            addNewPtr(updated);
+        } else{
+            delete updated;
+        }
         return true;
     }
 
@@ -400,10 +408,12 @@ public:
             CNode *old = root->main.load();
             if (old == nullptr) {
                 auto *c = new CNode();
-                addNewPtr(c);
                 c->insertChild(s, extractHashPartByLevel(s->getHash(), 0));
                 if (root->main.compare_exchange_strong(old, c)) {
+                    addNewPtr(c);
                     return InsertResult{.status = InsertResult::Status::Inserted};
+                } else {
+                    delete c;
                 }
             } else {
                 InsertResult res = insert(root, nullptr, s, 0);
@@ -489,7 +499,6 @@ private:
         }
 
         auto *updated = new CNode(*m);
-        addNewPtr(updated);
         uint8_t path = extractHashPartByLevel(newNode->getHash(), level);
         InsertResult res{};
 
@@ -498,6 +507,11 @@ private:
             transformToWithInsertedChild(updated, newNode, path);
             updated->isTomb = isTombed(updated, root, currentNode);
             res = currentNode->main.compare_exchange_strong(m, updated) ? INSERT_SUCCESSFUL : INSERT_RESTART;
+            if (res == INSERT_SUCCESSFUL){
+                addNewPtr(updated);
+            } else {
+                delete updated;
+            }
         } else if (subNode->type == SNODE) {
             auto *s = static_cast<SNode *>(subNode);
             if (s->contains(newNode)) {
@@ -511,7 +525,13 @@ private:
                 updated->isTomb = isTombed(updated, root, currentNode);
             }
             res = currentNode->main.compare_exchange_strong(m, updated) ? INSERT_SUCCESSFUL : INSERT_RESTART;
+            if (res == INSERT_SUCCESSFUL){
+                addNewPtr(updated);
+            } else {
+                delete updated;
+            }
         } else if (subNode->type == INODE) {
+            delete updated;
             res = insert(static_cast<INode *>(subNode), currentNode, newNode, level + 1);
         }
         return res;
