@@ -1,16 +1,10 @@
-#include <benchmark/benchmark.h>
-#include <armadillo>
 #include "include/hamt.h"
-
-
-// Define another benchmark
-static void BM_StringCopy(benchmark::State& state) {
-    for (auto _ : state){
-        unsigned int microseconds = 10000000;
-        usleep(microseconds);
+int main(){
+    for (int i = 0; i < 10000;i++){
+        Hamt<int, int> h;
+        for (int j = 0; j  < 1'000'000; j++){
+            h.insert(j,j );
+        }
+        cout << "finished" << endl;
     }
-
 }
-BENCHMARK(BM_StringCopy)->Repetitions(5)->Iterations(1);
-
-BENCHMARK_MAIN();
