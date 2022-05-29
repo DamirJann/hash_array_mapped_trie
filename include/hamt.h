@@ -39,6 +39,10 @@ public:
 //        cout << "deallocated " << it.load() * 8 << " bytes" << endl;
     }
 
+    static uint64_t generateSimpleHash(K key) {
+        return std::hash<K>{}(key);
+    }
+
     class Node {
     public:
         NodeType type;
