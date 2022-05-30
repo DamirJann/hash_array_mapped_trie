@@ -1,0 +1,11 @@
+"Hamt_Insert/iterations:1/repeats:1",1,1.00519e+10,6.5534e+08,ns,,,,,
+"Hamt_Insert/iterations:1/repeats:1",1,9.8377e+09,6.09079e+08,ns,,,,,
+"Hamt_Insert/iterations:1/repeats:1",1,9.9224e+09,6.03814e+08,ns,,,,,
+"Hamt_Insert/iterations:1/repeats:1",1,9.84014e+09,6.04419e+08,ns,,,,,
+"Hamt_Insert/iterations:1/repeats:1",1,9.90085e+09,6.04345e+08,ns,,,,,
+"Hamt_Insert/iterations:1/repeats:1",1,1.00299e+10,6.06567e+08,ns,,,,,
+"Hamt_Insert/iterations:1/repeats:1",1,9.75523e+09,6.03571e+08,ns,,,,,
+"Hamt_Insert/iterations:1/repeats:1",1,9.84709e+09,6.05041e+08,ns,,,,,
+"Hamt_Insert/iterations:1/repeats:1",1,9.8213e+09,6.33938e+08,ns,,,,,
+"Hamt_Insert/iterations:1/repeats:1",1,1.01706e+10,6.14419e+08,ns,,,,,
+
