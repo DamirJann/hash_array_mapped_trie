@@ -3,8 +3,8 @@
 
 FOLDER_NAME=benchmark_result
 TEST_COUNT=10
-export INSERT_COUNT=10000000
-export THREAD_COUNT=3
+export INSERT_COUNT=1000000
+export THREAD_COUNT=12
 
 rm -rf ${FOLDER_NAME}
 mkdir ${FOLDER_NAME}
