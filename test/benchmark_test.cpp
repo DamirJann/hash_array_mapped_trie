@@ -82,7 +82,7 @@ static void MichaelKVList_Insert(benchmark::State &state) {
 }
 
 
-BENCHMARK(Hamt_Insert)->Repetitions(1)->Iterations(1)->Threads(3);
+BENCHMARK(Hamt_Insert)->Repetitions(1)->Iterations(1);
 BENCHMARK(Set_Insert)->Repetitions(1)->Iterations(1);
 BENCHMARK(MichaelKVList_Insert)->Repetitions(1)->Iterations(1);
 
@@ -194,7 +194,7 @@ static void Hamt_Remove(benchmark::State &state) {
                 int *averageIterationCount = (int *) (*static_cast<vector<void *> *>(args))[2];
 
                 for (int i = *id * (*averageIterationCount); i < (*id + 1) * (*averageIterationCount); i++) {
-                    assert(hamt->remove(i).value == i);
+                    assert(hamt->remove(i) == true);
                 }
                 pthread_exit(nullptr);
             }, &attr[i]);

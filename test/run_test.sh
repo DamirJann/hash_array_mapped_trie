@@ -36,11 +36,12 @@ done
 
 for i in $(seq 1 1 12)
 do
-  printf "THREAD_COUNT=${THREAD_COUNT}\n"
+  export THREAD_COUNT=${i}
+  printf "THREAD_COUNT=${THREAD_COUNT}\n" >> ${FOLDER_NAME}/Hamt_Multithreading_Insert.txt
   for j in $(seq 1 1 10)
   do
     export THREAD_COUNT=${i}
-    /home/damire/space/hash_arrkay_mapped_trie/test/cmake-build-debug/benchmark_test --benchmark_out_format=csv --benchmark_out=tmp --benchmark_filter=Hamt_Insert
+    /home/damire/space/hash_array_mapped_trie/test/cmake-build-debug/benchmark_test --benchmark_out_format=csv --benchmark_out=tmp --benchmark_filter=Hamt_Insert
     sed '12!d' tmp >> ${FOLDER_NAME}/Hamt_Multithreading_Insert.txt
   done
   printf '\n' >> ${FOLDER_NAME}/Hamt_Multithreading_Insert.txt
