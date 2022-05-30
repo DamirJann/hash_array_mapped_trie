@@ -7,7 +7,7 @@
 #include "cds/container/michael_kvlist_hp.h"
 
 int threadCount = stoi(std::getenv("THREAD_COUNT"));
-int insertCount = 100'000;
+int insertCount = stoi(std::getenv("INSERT_COUNT"));
 
 // -----------------------------------------------------------------
 // -----------------------------------------------------------------
@@ -82,7 +82,7 @@ static void MichaelKVList_Insert(benchmark::State &state) {
 }
 
 
-BENCHMARK(Hamt_Insert)->Repetitions(1)->Iterations(1)->Threads(3);
+BENCHMARK(Hamt_Insert)->Repetitions(1)->Iterations(1);
 BENCHMARK(Set_Insert)->Repetitions(1)->Iterations(1);
 BENCHMARK(MichaelKVList_Insert)->Repetitions(1)->Iterations(1);
 
