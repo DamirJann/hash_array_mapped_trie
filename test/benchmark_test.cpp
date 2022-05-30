@@ -7,7 +7,7 @@
 #include "cds/container/michael_kvlist_hp.h"
 
 int threadCount = stoi(std::getenv("THREAD_COUNT"));
-int insertCount = 100'000;
+int insertCount = stoi(std::getenv("INSERT_COUNT"));
 
 // -----------------------------------------------------------------
 // -----------------------------------------------------------------

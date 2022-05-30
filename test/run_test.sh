@@ -3,13 +3,14 @@
 
 FOLDER_NAME=benchmark_result
 TEST_COUNT=10
-export THREAD_COUNT=10
+export INSERT_COUNT=10000000
+export THREAD_COUNT=3
 
 rm -rf ${FOLDER_NAME}
 mkdir ${FOLDER_NAME}
 
 test_names=(
-#    Hamt_Insert
+    Hamt_Insert
 #    Set_Insert
 #    MichaelKVList_Insert
 #
@@ -37,6 +38,7 @@ done
 for i in $(seq 1 1 12)
 do
   export THREAD_COUNT=${i}
+  export INSERT_COUNT=${INSERT_COUNT}
   printf "THREAD_COUNT=${THREAD_COUNT}\n" >> ${FOLDER_NAME}/Hamt_Multithreading_Insert.txt
   for j in $(seq 1 1 10)
   do
