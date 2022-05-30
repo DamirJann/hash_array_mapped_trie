@@ -13,21 +13,25 @@ int insertCount = stoi(std::getenv("INSERT_COUNT"));
 // -----------------------------------------------------------------
 
 static void Hamt_Insert(benchmark::State &state) {
+    mutex mutex;
     for (auto _: state) {
         Hamt<int, int> hamt;
         vector<pthread_t> thread(threadCount);
         vector<vector<void *>> attr(threadCount);
         for (int i = 0; i < attr.size(); i++) {
-            attr[i] = {&hamt, new int(i), new int(insertCount / threadCount)};
+            attr[i] = {&hamt, new int(i), new int(insertCount / threadCount), &mutex};
         }
         for (int i = 0; i < thread.size(); i++) {
             pthread_create(&thread[i], nullptr, [](void *args) -> void * {
                 auto *hamt = (Hamt<int, int> *) (*static_cast<vector<void *> *>(args))[0];
                 int *id = (int *) (*static_cast<vector<void *> *>(args))[1];
                 int *averageIterationCount = (int *) (*static_cast<vector<void *> *>(args))[2];
+                std::mutex *mutex = (std::mutex *) (*static_cast<vector<void *> *>(args))[3];
 
                 for (int i = *id * (*averageIterationCount); i < (*id + 1) * (*averageIterationCount); i++) {
+                    mutex->lock();
                     hamt->insert(i, i);
+                    mutex->unlock();
                 }
                 pthread_exit(nullptr);
             }, &attr[i]);
