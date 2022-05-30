@@ -1,9 +1,9 @@
-#include "include/trie.h"
+#include "include/hamt.h"
 #include "include/utils.h"
 #include "include/visualize.h"
 
 int main(){
-    Trie<string, int> trie;
+    Hamt<string, int> trie;
 
     for (int i = 0; i < 100; i++){
         fprintf(stdout, "for k%d hash is %lu\n", i, generateSimpleHash("k"+ to_string(i)));

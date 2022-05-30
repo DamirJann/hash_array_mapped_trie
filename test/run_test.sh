@@ -3,23 +3,18 @@
 
 FOLDER_NAME=benchmark_result
 TEST_COUNT=10
-export THREAD_COUNT=10
+export THREAD_COUNT=1
+export INSERT_COUNT=1000000
 
 rm -rf ${FOLDER_NAME}
 mkdir ${FOLDER_NAME}
 
 test_names=(
-#    Hamt_Insert
-#    Set_Insert
-#    MichaelKVList_Insert
-#
-#    Hamt_Lookup
-#    Set_Lookup
-#    MichaelKVList_Lookup
-#
-#    Hamt_Remove
-#    Set_Remove
-#    MichaelKVList_Remove
+    Hamt_Insert
+
+    Hamt_Lookup
+
+    Hamt_Remove
 )
 
 for test_name in ${test_names[@]}; do
@@ -34,14 +29,3 @@ for test_name in ${test_names[@]}; do
 done
 
 
-for i in $(seq 1 1 12)
-do
-  printf "THREAD_COUNT=${THREAD_COUNT}\n"
-  for j in $(seq 1 1 10)
-  do
-    export THREAD_COUNT=${i}
-    /home/damire/space/hash_arrkay_mapped_trie/test/cmake-build-debug/benchmark_test --benchmark_out_format=csv --benchmark_out=tmp --benchmark_filter=Hamt_Insert
-    sed '12!d' tmp >> ${FOLDER_NAME}/Hamt_Multithreading_Insert.txt
-  done
-  printf '\n' >> ${FOLDER_NAME}/Hamt_Multithreading_Insert.txt
-done

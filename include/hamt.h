@@ -250,12 +250,12 @@ bool tryToContract(INode<K, V> *currentNode, INode<K, V> *reducedNode, uint8_t p
 }
 
 template<class K, class V>
-class Trie {
+class Hamt {
 private:
     INode<K, V> *root;
 public:
 
-    Trie() {
+    Hamt() {
         root = new INode<K, V>(new CNode<K, V>());
     }
 
@@ -304,7 +304,7 @@ private:
                 return lookup(static_cast<INode<K, V> *>(nextNode), key, hash, level + 1);
             }
             default: {
-                static_assert(true, "Trie is build wrong");
+                static_assert(true, "Hamt is build wrong");
                 return NOT_FOUND;
             }
         }
@@ -333,7 +333,7 @@ private:
                 }
             }
             default: {
-                static_assert(true, "Trie is build wrong");
+                static_assert(true, "Hamt is build wrong");
                 return false;
             }
         }

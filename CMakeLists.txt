@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 14)
 
 # MAIN TARGET
 add_executable(
-        hamt include/trie.h include/visualize.h main.cpp src/utils.cpp
+        hamt include/hamt.h include/visualize.h main.cpp src/utils.cpp
 )
 
 # COMPILATION FLAGS
