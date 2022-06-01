@@ -11,8 +11,8 @@ rm -rf ${FOLDER_NAME}
 mkdir ${FOLDER_NAME}
 
 test_names=(
-#    Hamt_Insert
-#    Set_Insert
+    Hamt_Insert
+    Set_Insert
 #    MichaelKVList_Insert
 #
 #    Hamt_Lookup
@@ -21,7 +21,7 @@ test_names=(
 
 #    Hamt_Remove
 #    Set_Remove
-    MichaelKVList_Remove
+#    MichaelKVList_Remove
 )
 
 # shellcheck disable=SC2068
