@@ -6,8 +6,8 @@ set(CMAKE_CXX_FLAGS -pthread)
 
 add_subdirectory(../lib/googletest googletests)
 
-include_directories(../lib/benchmark/include ../lib/benchmark/build/include ../lib/libcds)
-link_directories(../lib/benchmark/build/src ../lib/libcds/libcds-debug/bin)
+include_directories(../lib/benchmark/include ../lib/benchmark/build/include)
+link_directories(../lib/benchmark/build/src )
 
 
 # TEST TARGET
@@ -28,6 +28,5 @@ target_link_libraries(
 
 target_link_libraries(
         benchmark_test
-        cds
         libbenchmark.a
 )
