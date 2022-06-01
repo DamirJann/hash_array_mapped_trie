@@ -146,9 +146,7 @@ static void Set_Lookup(benchmark::State &state) {
     set<int> set;
     for (int i = 0; i < insertCount; i++) {
         set.insert(i);
-        cout << "inserting " << i << endl;
     }
-    cout << "finished";
     for (auto _: state) {
         vector<pthread_t> thread(threadCount);
         vector<vector<void *>> attr(threadCount);
@@ -225,15 +223,15 @@ BENCHMARK(MichaelKVList_Lookup)->Repetitions(1)->Iterations(1);
 // -----------------------------------------------------------------
 
 static void Hamt_Remove(benchmark::State &state) {
-    Hamt<int, int> hamt;
+    auto *hamt = new Hamt<int, int>();
     for (int i = 0; i < threadCount * insertCount; i++) {
-        hamt.insert(i, i);
+        hamt->insert(i, i);
     }
     for (auto _: state) {
         vector<pthread_t> thread(threadCount);
         vector<vector<void *>> attr(threadCount);
         for (int i = 0; i < attr.size(); i++) {
-            attr[i] = {&hamt, new int(i), new int(insertCount / threadCount)};
+            attr[i] = {hamt, new int(i), new int(insertCount / threadCount)};
         }
         for (int i = 0; i < thread.size(); i++) {
             pthread_create(&thread[i], nullptr, [](void *args) -> void * {
@@ -250,18 +248,22 @@ static void Hamt_Remove(benchmark::State &state) {
         for (unsigned long i: thread) {
             pthread_join(i, nullptr);
         }
+//        delete hamt;
     }
-    cds::Terminate();
 }
 
 static void Set_Remove(benchmark::State &state) {
+    auto *set = new std::set<int>();
+    for (int i = 0; i < insertCount; i++) {
+        set->insert(i);
+    }
+
     for (auto _: state) {
-        set<int> set;
         vector<pthread_t> thread(threadCount);
         mutex mutex;
         vector<vector<void *>> attr(threadCount);
         for (int i = 0; i < attr.size(); i++) {
-            attr[i] = {&set, new int(i), new int(insertCount / threadCount), &mutex};
+            attr[i] = {set, new int(i), new int(insertCount / threadCount), &mutex};
         }
         for (int i = 0; i < thread.size(); i++) {
             pthread_create(&thread[i], nullptr, [](void *args) -> void * {
@@ -283,6 +285,7 @@ static void Set_Remove(benchmark::State &state) {
         for (unsigned long i: thread) {
             pthread_join(i, nullptr);
         }
+        delete set;
     }
 }
 
@@ -290,17 +293,17 @@ static void MichaelKVList_Remove(benchmark::State &state) {
     cds::Initialize();
     cds::gc::HP hpGC;
     cds::threading::Manager::attachThread();
-    cds::container::MichaelKVList<cds::gc::HP, int, int> michaelKvList;
+    auto* michaelKvList = new cds::container::MichaelKVList<cds::gc::HP, int, int>();
 
     for (int i = 0; i < insertCount; i++) {
-        michaelKvList.insert(i, i);
+        michaelKvList->insert(i, i);
     }
 
     for (auto _: state) {
         vector<pthread_t> thread(threadCount);
         vector<vector<void *>> attr(threadCount);
         for (int i = 0; i < attr.size(); i++) {
-            attr[i] = {&michaelKvList, new int(i), new int(insertCount / threadCount)};
+            attr[i] = {michaelKvList, new int(i), new int(insertCount / threadCount)};
         }
         for (int i = 0; i < thread.size(); i++) {
             pthread_create(&thread[i], nullptr, [](void *args) -> void * {
@@ -319,6 +322,7 @@ static void MichaelKVList_Remove(benchmark::State &state) {
         for (unsigned long i: thread) {
             pthread_join(i, nullptr);
         }
+        delete michaelKvList;
     }
     cds::Terminate();
 }
