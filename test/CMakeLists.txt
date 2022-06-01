@@ -7,9 +7,9 @@ set(CMAKE_CXX_FLAGS -pthread)
 #add_subdirectory(../lib/googletest-release/lib googletests)
 
 include_directories(
-        ../lib/benchmark/include
+        ../lib/benchmark-release/include
         ../lib/benchmark-release/build/include
-        ../lib/libcds
+        ../lib/libcds-release/libcds
         ../lib/googletest-release/googletest/include
 )
 link_directories(
