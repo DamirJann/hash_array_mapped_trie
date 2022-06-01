@@ -137,20 +137,6 @@ TEST(CNode, HAPPY_FLOW_GET__NODE_LOOKUP_NOT_FOUND) {
     ASSERT_EQ(node.getSubNode(0b11111), nullptr);
 }
 
-// BEFORE: i1 -> c1
-//  AFTER: i1 -> c1 -> i2 -> c2 -> i3 -> c3 -> k1, k2
-TEST(TRIE, HAPPY_FLOW__INSERT_TO_EMPTY_TRIE) {
-    // arrange
-    Hamt<string, int> hamt;
-
-    // act
-    hamt.insert("abc", 1);
-
-    // assert
-    ASSERT_NE(hamt.root->main->getSubNode(8), nullptr);
-    ASSERT_EQ(hamt.root->main->getSubNode(0), nullptr);
-}
-
 TEST(TRIE, HAPPY_FLOW__LOOKUP) {
     // arrange
     Hamt<string, int> hamt;

@@ -81,6 +81,7 @@ public:
         return false;
     }
 
+
     int getValue(K k) {
         for (auto &p: this->pair) {
             if (p.key == k) {
@@ -287,6 +288,11 @@ public:
     }
 
 
+    static uint64_t generateSimpleHash(K key) {
+        return std::hash<K>{}(key);
+    }
+
+
 private:
     LookupResult lookup(INode<K, V> *startNode, K key, uint64_t hash, uint8_t level) {
         Node *nextNode = startNode->main->getSubNode(extractHashPartByLevel(hash, level));
@@ -367,7 +373,7 @@ private:
 
 template<class K, class V>
 CNode<K, V> *createParentWithChild(SNode<K, V> *child, uint8_t path) {
-    CNode<K, V> *parent = new CNode<K, V>();
+    auto *parent = new CNode<K, V>();
     parent->insertChild(child, path);
     return parent;
 }
