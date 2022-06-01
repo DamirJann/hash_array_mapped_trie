@@ -361,7 +361,7 @@ TEST(TRIE, HAPPY_FLOW__INSERTING_AND_LOOKING_UP_BY_MANY_THREAD) {
 
     // assert
     for (int i = 0; i < averageIterationCount * threadCount; i++) {
-        ASSERT_EQ(hamt.lookup(i), (hamt.createSuccessfulLookupResult(i)));
+        ASSERT_EQ(hamt.lookup(i), (reateSuccessfulLookupResult(i)));
     }
 }
 

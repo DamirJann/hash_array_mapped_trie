@@ -41,5 +41,3 @@ do
   done
   printf '\n' >> ${FOLDER_NAME}/Hamt_Multithreading_Insert.txt
 done
-
-rm tmp

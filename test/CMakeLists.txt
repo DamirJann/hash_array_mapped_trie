@@ -6,8 +6,8 @@ set(CMAKE_CXX_FLAGS -pthread)
 
 add_subdirectory(../lib/googletest googletests)
 
-include_directories(../../benchmark/include ../../benchmark/build/include ../../libcds)
-link_directories(../../benchmark/build/src ../../libcds/libcds-debug/bin ../lib/googletest)
+include_directories(../lib/benchmark/include ../lib/benchmark/build/include ../lib/libcds)
+link_directories(../lib/benchmark/build/src ../lib/libcds/libcds-debug/bin)
 
 
 # TEST TARGET
@@ -22,7 +22,7 @@ add_executable(
 
 target_link_libraries(
         unit_test PRIVATE
-        gtest gtest_main.a
+        gtest gtest_main
 )
 
 
