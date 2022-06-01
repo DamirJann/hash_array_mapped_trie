@@ -11,16 +11,19 @@ libcds:
 
 benchmark:
 	git clone https://github.com/google/benchmark
-	cd benchmark && \
+	mkdir benchmark-release
+	cd benchmark-release && \
 	cmake -E make_directory "build" && \
-	cmake -E chdir "build" cmake -DBENCHMARK_DOWNLOAD_DEPENDENCIES=on -DCMAKE_BUILD_TYPE=Release ../ && \
+	cmake -E chdir "build" cmake -DBENCHMARK_DOWNLOAD_DEPENDENCIES=on -DCMAKE_BUILD_TYPE=Release ../../benchmark && \
 	cmake --build "build" --config Release
 
 googletest:
 	git clone https://github.com/google/googletest.git
-	cd googletest && \
-    cmake . && \
-    make
+	mkdir googletest-release
+	cd googletest-release && \
+    cmake ../googletest && \
+    make . && \
+    cp -r  ../googletest/googletest/include googletest/include
 
 clean:
 	rm -rf

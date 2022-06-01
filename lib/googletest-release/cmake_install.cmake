@@ -44,7 +44,7 @@ endif()
 
 if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   # Include the install script for each subdirectory.
-  include("/home/damire/space/hash_array_mapped_trie/lib/googletest/googlemock/cmake_install.cmake")
+  include("/home/damire/space/hash_array_mapped_trie/lib/googletest-release/googlemock/cmake_install.cmake")
 
 endif()
 
@@ -56,5 +56,5 @@ endif()
 
 string(REPLACE ";" "\n" CMAKE_INSTALL_MANIFEST_CONTENT
        "${CMAKE_INSTALL_MANIFEST_FILES}")
-file(WRITE "/home/damire/space/hash_array_mapped_trie/lib/googletest/${CMAKE_INSTALL_MANIFEST}"
+file(WRITE "/home/damire/space/hash_array_mapped_trie/lib/googletest-release/${CMAKE_INSTALL_MANIFEST}"
      "${CMAKE_INSTALL_MANIFEST_CONTENT}")

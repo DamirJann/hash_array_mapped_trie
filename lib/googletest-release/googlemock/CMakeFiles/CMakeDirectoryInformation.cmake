@@ -3,7 +3,7 @@
 
 # Relative path conversion top directories.
 set(CMAKE_RELATIVE_PATH_TOP_SOURCE "/home/damire/space/hash_array_mapped_trie/lib/googletest")
-set(CMAKE_RELATIVE_PATH_TOP_BINARY "/home/damire/space/hash_array_mapped_trie/lib/googletest")
+set(CMAKE_RELATIVE_PATH_TOP_BINARY "/home/damire/space/hash_array_mapped_trie/lib/googletest-release")
 
 # Force unix paths in dependencies.
 set(CMAKE_FORCE_UNIX_PATHS 1)

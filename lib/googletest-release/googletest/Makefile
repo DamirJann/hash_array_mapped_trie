@@ -60,7 +60,7 @@ EQUALS = =
 CMAKE_SOURCE_DIR = /home/damire/space/hash_array_mapped_trie/lib/googletest
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/damire/space/hash_array_mapped_trie/lib/googletest
+CMAKE_BINARY_DIR = /home/damire/space/hash_array_mapped_trie/lib/googletest-release
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -142,14 +142,14 @@ install/strip/fast: preinstall/fast
 
 # The main all target
 all: cmake_check_build_system
-	cd /home/damire/space/hash_array_mapped_trie/lib/googletest && $(CMAKE_COMMAND) -E cmake_progress_start /home/damire/space/hash_array_mapped_trie/lib/googletest/CMakeFiles /home/damire/space/hash_array_mapped_trie/lib/googletest/googletest//CMakeFiles/progress.marks
-	cd /home/damire/space/hash_array_mapped_trie/lib/googletest && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 googletest/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/damire/space/hash_array_mapped_trie/lib/googletest/CMakeFiles 0
+	cd /home/damire/space/hash_array_mapped_trie/lib/googletest-release && $(CMAKE_COMMAND) -E cmake_progress_start /home/damire/space/hash_array_mapped_trie/lib/googletest-release/CMakeFiles /home/damire/space/hash_array_mapped_trie/lib/googletest-release/googletest//CMakeFiles/progress.marks
+	cd /home/damire/space/hash_array_mapped_trie/lib/googletest-release && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 googletest/all
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/damire/space/hash_array_mapped_trie/lib/googletest-release/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
 clean:
-	cd /home/damire/space/hash_array_mapped_trie/lib/googletest && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 googletest/clean
+	cd /home/damire/space/hash_array_mapped_trie/lib/googletest-release && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 googletest/clean
 .PHONY : clean
 
 # The main clean target
@@ -158,22 +158,22 @@ clean/fast: clean
 
 # Prepare targets for installation.
 preinstall: all
-	cd /home/damire/space/hash_array_mapped_trie/lib/googletest && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 googletest/preinstall
+	cd /home/damire/space/hash_array_mapped_trie/lib/googletest-release && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 googletest/preinstall
 .PHONY : preinstall
 
 # Prepare targets for installation.
 preinstall/fast:
-	cd /home/damire/space/hash_array_mapped_trie/lib/googletest && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 googletest/preinstall
+	cd /home/damire/space/hash_array_mapped_trie/lib/googletest-release && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 googletest/preinstall
 .PHONY : preinstall/fast
 
 # clear depends
 depend:
-	cd /home/damire/space/hash_array_mapped_trie/lib/googletest && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
+	cd /home/damire/space/hash_array_mapped_trie/lib/googletest-release && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
 
 # Convenience name for target.
 googletest/CMakeFiles/gtest.dir/rule:
-	cd /home/damire/space/hash_array_mapped_trie/lib/googletest && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 googletest/CMakeFiles/gtest.dir/rule
+	cd /home/damire/space/hash_array_mapped_trie/lib/googletest-release && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 googletest/CMakeFiles/gtest.dir/rule
 .PHONY : googletest/CMakeFiles/gtest.dir/rule
 
 # Convenience name for target.
@@ -182,12 +182,12 @@ gtest: googletest/CMakeFiles/gtest.dir/rule
 
 # fast build rule for target.
 gtest/fast:
-	cd /home/damire/space/hash_array_mapped_trie/lib/googletest && $(MAKE) $(MAKESILENT) -f googletest/CMakeFiles/gtest.dir/build.make googletest/CMakeFiles/gtest.dir/build
+	cd /home/damire/space/hash_array_mapped_trie/lib/googletest-release && $(MAKE) $(MAKESILENT) -f googletest/CMakeFiles/gtest.dir/build.make googletest/CMakeFiles/gtest.dir/build
 .PHONY : gtest/fast
 
 # Convenience name for target.
 googletest/CMakeFiles/gtest_main.dir/rule:
-	cd /home/damire/space/hash_array_mapped_trie/lib/googletest && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 googletest/CMakeFiles/gtest_main.dir/rule
+	cd /home/damire/space/hash_array_mapped_trie/lib/googletest-release && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 googletest/CMakeFiles/gtest_main.dir/rule
 .PHONY : googletest/CMakeFiles/gtest_main.dir/rule
 
 # Convenience name for target.
@@ -196,7 +196,7 @@ gtest_main: googletest/CMakeFiles/gtest_main.dir/rule
 
 # fast build rule for target.
 gtest_main/fast:
-	cd /home/damire/space/hash_array_mapped_trie/lib/googletest && $(MAKE) $(MAKESILENT) -f googletest/CMakeFiles/gtest_main.dir/build.make googletest/CMakeFiles/gtest_main.dir/build
+	cd /home/damire/space/hash_array_mapped_trie/lib/googletest-release && $(MAKE) $(MAKESILENT) -f googletest/CMakeFiles/gtest_main.dir/build.make googletest/CMakeFiles/gtest_main.dir/build
 .PHONY : gtest_main/fast
 
 src/gtest-all.o: src/gtest-all.cc.o
@@ -204,7 +204,7 @@ src/gtest-all.o: src/gtest-all.cc.o
 
 # target to build an object file
 src/gtest-all.cc.o:
-	cd /home/damire/space/hash_array_mapped_trie/lib/googletest && $(MAKE) $(MAKESILENT) -f googletest/CMakeFiles/gtest.dir/build.make googletest/CMakeFiles/gtest.dir/src/gtest-all.cc.o
+	cd /home/damire/space/hash_array_mapped_trie/lib/googletest-release && $(MAKE) $(MAKESILENT) -f googletest/CMakeFiles/gtest.dir/build.make googletest/CMakeFiles/gtest.dir/src/gtest-all.cc.o
 .PHONY : src/gtest-all.cc.o
 
 src/gtest-all.i: src/gtest-all.cc.i
@@ -212,7 +212,7 @@ src/gtest-all.i: src/gtest-all.cc.i
 
 # target to preprocess a source file
 src/gtest-all.cc.i:
-	cd /home/damire/space/hash_array_mapped_trie/lib/googletest && $(MAKE) $(MAKESILENT) -f googletest/CMakeFiles/gtest.dir/build.make googletest/CMakeFiles/gtest.dir/src/gtest-all.cc.i
+	cd /home/damire/space/hash_array_mapped_trie/lib/googletest-release && $(MAKE) $(MAKESILENT) -f googletest/CMakeFiles/gtest.dir/build.make googletest/CMakeFiles/gtest.dir/src/gtest-all.cc.i
 .PHONY : src/gtest-all.cc.i
 
 src/gtest-all.s: src/gtest-all.cc.s
@@ -220,7 +220,7 @@ src/gtest-all.s: src/gtest-all.cc.s
 
 # target to generate assembly for a file
 src/gtest-all.cc.s:
-	cd /home/damire/space/hash_array_mapped_trie/lib/googletest && $(MAKE) $(MAKESILENT) -f googletest/CMakeFiles/gtest.dir/build.make googletest/CMakeFiles/gtest.dir/src/gtest-all.cc.s
+	cd /home/damire/space/hash_array_mapped_trie/lib/googletest-release && $(MAKE) $(MAKESILENT) -f googletest/CMakeFiles/gtest.dir/build.make googletest/CMakeFiles/gtest.dir/src/gtest-all.cc.s
 .PHONY : src/gtest-all.cc.s
 
 src/gtest_main.o: src/gtest_main.cc.o
@@ -228,7 +228,7 @@ src/gtest_main.o: src/gtest_main.cc.o
 
 # target to build an object file
 src/gtest_main.cc.o:
-	cd /home/damire/space/hash_array_mapped_trie/lib/googletest && $(MAKE) $(MAKESILENT) -f googletest/CMakeFiles/gtest_main.dir/build.make googletest/CMakeFiles/gtest_main.dir/src/gtest_main.cc.o
+	cd /home/damire/space/hash_array_mapped_trie/lib/googletest-release && $(MAKE) $(MAKESILENT) -f googletest/CMakeFiles/gtest_main.dir/build.make googletest/CMakeFiles/gtest_main.dir/src/gtest_main.cc.o
 .PHONY : src/gtest_main.cc.o
 
 src/gtest_main.i: src/gtest_main.cc.i
@@ -236,7 +236,7 @@ src/gtest_main.i: src/gtest_main.cc.i
 
 # target to preprocess a source file
 src/gtest_main.cc.i:
-	cd /home/damire/space/hash_array_mapped_trie/lib/googletest && $(MAKE) $(MAKESILENT) -f googletest/CMakeFiles/gtest_main.dir/build.make googletest/CMakeFiles/gtest_main.dir/src/gtest_main.cc.i
+	cd /home/damire/space/hash_array_mapped_trie/lib/googletest-release && $(MAKE) $(MAKESILENT) -f googletest/CMakeFiles/gtest_main.dir/build.make googletest/CMakeFiles/gtest_main.dir/src/gtest_main.cc.i
 .PHONY : src/gtest_main.cc.i
 
 src/gtest_main.s: src/gtest_main.cc.s
@@ -244,7 +244,7 @@ src/gtest_main.s: src/gtest_main.cc.s
 
 # target to generate assembly for a file
 src/gtest_main.cc.s:
-	cd /home/damire/space/hash_array_mapped_trie/lib/googletest && $(MAKE) $(MAKESILENT) -f googletest/CMakeFiles/gtest_main.dir/build.make googletest/CMakeFiles/gtest_main.dir/src/gtest_main.cc.s
+	cd /home/damire/space/hash_array_mapped_trie/lib/googletest-release && $(MAKE) $(MAKESILENT) -f googletest/CMakeFiles/gtest_main.dir/build.make googletest/CMakeFiles/gtest_main.dir/src/gtest_main.cc.s
 .PHONY : src/gtest_main.cc.s
 
 # Help Target
@@ -279,6 +279,6 @@ help:
 # No rule that depends on this can have commands that come from listfiles
 # because they might be regenerated.
 cmake_check_build_system:
-	cd /home/damire/space/hash_array_mapped_trie/lib/googletest && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
+	cd /home/damire/space/hash_array_mapped_trie/lib/googletest-release && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
 .PHONY : cmake_check_build_system
 

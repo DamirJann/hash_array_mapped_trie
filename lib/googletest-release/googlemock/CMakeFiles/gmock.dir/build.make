@@ -56,7 +56,7 @@ EQUALS = =
 CMAKE_SOURCE_DIR = /home/damire/space/hash_array_mapped_trie/lib/googletest
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/damire/space/hash_array_mapped_trie/lib/googletest
+CMAKE_BINARY_DIR = /home/damire/space/hash_array_mapped_trie/lib/googletest-release
 
 # Include any dependencies generated for this target.
 include googlemock/CMakeFiles/gmock.dir/depend.make
@@ -70,18 +70,18 @@ include googlemock/CMakeFiles/gmock.dir/progress.make
 include googlemock/CMakeFiles/gmock.dir/flags.make
 
 googlemock/CMakeFiles/gmock.dir/src/gmock-all.cc.o: googlemock/CMakeFiles/gmock.dir/flags.make
-googlemock/CMakeFiles/gmock.dir/src/gmock-all.cc.o: googlemock/src/gmock-all.cc
+googlemock/CMakeFiles/gmock.dir/src/gmock-all.cc.o: /home/damire/space/hash_array_mapped_trie/lib/googletest/googlemock/src/gmock-all.cc
 googlemock/CMakeFiles/gmock.dir/src/gmock-all.cc.o: googlemock/CMakeFiles/gmock.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/damire/space/hash_array_mapped_trie/lib/googletest/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object googlemock/CMakeFiles/gmock.dir/src/gmock-all.cc.o"
-	cd /home/damire/space/hash_array_mapped_trie/lib/googletest/googlemock && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT googlemock/CMakeFiles/gmock.dir/src/gmock-all.cc.o -MF CMakeFiles/gmock.dir/src/gmock-all.cc.o.d -o CMakeFiles/gmock.dir/src/gmock-all.cc.o -c /home/damire/space/hash_array_mapped_trie/lib/googletest/googlemock/src/gmock-all.cc
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/damire/space/hash_array_mapped_trie/lib/googletest-release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object googlemock/CMakeFiles/gmock.dir/src/gmock-all.cc.o"
+	cd /home/damire/space/hash_array_mapped_trie/lib/googletest-release/googlemock && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT googlemock/CMakeFiles/gmock.dir/src/gmock-all.cc.o -MF CMakeFiles/gmock.dir/src/gmock-all.cc.o.d -o CMakeFiles/gmock.dir/src/gmock-all.cc.o -c /home/damire/space/hash_array_mapped_trie/lib/googletest/googlemock/src/gmock-all.cc
 
 googlemock/CMakeFiles/gmock.dir/src/gmock-all.cc.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/gmock.dir/src/gmock-all.cc.i"
-	cd /home/damire/space/hash_array_mapped_trie/lib/googletest/googlemock && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/damire/space/hash_array_mapped_trie/lib/googletest/googlemock/src/gmock-all.cc > CMakeFiles/gmock.dir/src/gmock-all.cc.i
+	cd /home/damire/space/hash_array_mapped_trie/lib/googletest-release/googlemock && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/damire/space/hash_array_mapped_trie/lib/googletest/googlemock/src/gmock-all.cc > CMakeFiles/gmock.dir/src/gmock-all.cc.i
 
 googlemock/CMakeFiles/gmock.dir/src/gmock-all.cc.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/gmock.dir/src/gmock-all.cc.s"
-	cd /home/damire/space/hash_array_mapped_trie/lib/googletest/googlemock && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/damire/space/hash_array_mapped_trie/lib/googletest/googlemock/src/gmock-all.cc -o CMakeFiles/gmock.dir/src/gmock-all.cc.s
+	cd /home/damire/space/hash_array_mapped_trie/lib/googletest-release/googlemock && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/damire/space/hash_array_mapped_trie/lib/googletest/googlemock/src/gmock-all.cc -o CMakeFiles/gmock.dir/src/gmock-all.cc.s
 
 # Object files for target gmock
 gmock_OBJECTS = \
@@ -93,19 +93,19 @@ gmock_EXTERNAL_OBJECTS =
 lib/libgmock.a: googlemock/CMakeFiles/gmock.dir/src/gmock-all.cc.o
 lib/libgmock.a: googlemock/CMakeFiles/gmock.dir/build.make
 lib/libgmock.a: googlemock/CMakeFiles/gmock.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/damire/space/hash_array_mapped_trie/lib/googletest/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX static library ../lib/libgmock.a"
-	cd /home/damire/space/hash_array_mapped_trie/lib/googletest/googlemock && $(CMAKE_COMMAND) -P CMakeFiles/gmock.dir/cmake_clean_target.cmake
-	cd /home/damire/space/hash_array_mapped_trie/lib/googletest/googlemock && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/gmock.dir/link.txt --verbose=$(VERBOSE)
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/damire/space/hash_array_mapped_trie/lib/googletest-release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX static library ../lib/libgmock.a"
+	cd /home/damire/space/hash_array_mapped_trie/lib/googletest-release/googlemock && $(CMAKE_COMMAND) -P CMakeFiles/gmock.dir/cmake_clean_target.cmake
+	cd /home/damire/space/hash_array_mapped_trie/lib/googletest-release/googlemock && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/gmock.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
 googlemock/CMakeFiles/gmock.dir/build: lib/libgmock.a
 .PHONY : googlemock/CMakeFiles/gmock.dir/build
 
 googlemock/CMakeFiles/gmock.dir/clean:
-	cd /home/damire/space/hash_array_mapped_trie/lib/googletest/googlemock && $(CMAKE_COMMAND) -P CMakeFiles/gmock.dir/cmake_clean.cmake
+	cd /home/damire/space/hash_array_mapped_trie/lib/googletest-release/googlemock && $(CMAKE_COMMAND) -P CMakeFiles/gmock.dir/cmake_clean.cmake
 .PHONY : googlemock/CMakeFiles/gmock.dir/clean
 
 googlemock/CMakeFiles/gmock.dir/depend:
-	cd /home/damire/space/hash_array_mapped_trie/lib/googletest && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/damire/space/hash_array_mapped_trie/lib/googletest /home/damire/space/hash_array_mapped_trie/lib/googletest/googlemock /home/damire/space/hash_array_mapped_trie/lib/googletest /home/damire/space/hash_array_mapped_trie/lib/googletest/googlemock /home/damire/space/hash_array_mapped_trie/lib/googletest/googlemock/CMakeFiles/gmock.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/damire/space/hash_array_mapped_trie/lib/googletest-release && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/damire/space/hash_array_mapped_trie/lib/googletest /home/damire/space/hash_array_mapped_trie/lib/googletest/googlemock /home/damire/space/hash_array_mapped_trie/lib/googletest-release /home/damire/space/hash_array_mapped_trie/lib/googletest-release/googlemock /home/damire/space/hash_array_mapped_trie/lib/googletest-release/googlemock/CMakeFiles/gmock.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : googlemock/CMakeFiles/gmock.dir/depend
 

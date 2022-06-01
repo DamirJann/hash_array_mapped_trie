@@ -56,7 +56,7 @@ EQUALS = =
 CMAKE_SOURCE_DIR = /home/damire/space/hash_array_mapped_trie/lib/googletest
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/damire/space/hash_array_mapped_trie/lib/googletest
+CMAKE_BINARY_DIR = /home/damire/space/hash_array_mapped_trie/lib/googletest-release
 
 # Include any dependencies generated for this target.
 include googletest/CMakeFiles/gtest.dir/depend.make
@@ -70,18 +70,18 @@ include googletest/CMakeFiles/gtest.dir/progress.make
 include googletest/CMakeFiles/gtest.dir/flags.make
 
 googletest/CMakeFiles/gtest.dir/src/gtest-all.cc.o: googletest/CMakeFiles/gtest.dir/flags.make
-googletest/CMakeFiles/gtest.dir/src/gtest-all.cc.o: googletest/src/gtest-all.cc
+googletest/CMakeFiles/gtest.dir/src/gtest-all.cc.o: /home/damire/space/hash_array_mapped_trie/lib/googletest/googletest/src/gtest-all.cc
 googletest/CMakeFiles/gtest.dir/src/gtest-all.cc.o: googletest/CMakeFiles/gtest.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/damire/space/hash_array_mapped_trie/lib/googletest/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object googletest/CMakeFiles/gtest.dir/src/gtest-all.cc.o"
-	cd /home/damire/space/hash_array_mapped_trie/lib/googletest/googletest && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT googletest/CMakeFiles/gtest.dir/src/gtest-all.cc.o -MF CMakeFiles/gtest.dir/src/gtest-all.cc.o.d -o CMakeFiles/gtest.dir/src/gtest-all.cc.o -c /home/damire/space/hash_array_mapped_trie/lib/googletest/googletest/src/gtest-all.cc
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir=/home/damire/space/hash_array_mapped_trie/lib/googletest-release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Building CXX object googletest/CMakeFiles/gtest.dir/src/gtest-all.cc.o"
+	cd /home/damire/space/hash_array_mapped_trie/lib/googletest-release/googletest && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT googletest/CMakeFiles/gtest.dir/src/gtest-all.cc.o -MF CMakeFiles/gtest.dir/src/gtest-all.cc.o.d -o CMakeFiles/gtest.dir/src/gtest-all.cc.o -c /home/damire/space/hash_array_mapped_trie/lib/googletest/googletest/src/gtest-all.cc
 
 googletest/CMakeFiles/gtest.dir/src/gtest-all.cc.i: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing CXX source to CMakeFiles/gtest.dir/src/gtest-all.cc.i"
-	cd /home/damire/space/hash_array_mapped_trie/lib/googletest/googletest && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/damire/space/hash_array_mapped_trie/lib/googletest/googletest/src/gtest-all.cc > CMakeFiles/gtest.dir/src/gtest-all.cc.i
+	cd /home/damire/space/hash_array_mapped_trie/lib/googletest-release/googletest && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /home/damire/space/hash_array_mapped_trie/lib/googletest/googletest/src/gtest-all.cc > CMakeFiles/gtest.dir/src/gtest-all.cc.i
 
 googletest/CMakeFiles/gtest.dir/src/gtest-all.cc.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling CXX source to assembly CMakeFiles/gtest.dir/src/gtest-all.cc.s"
-	cd /home/damire/space/hash_array_mapped_trie/lib/googletest/googletest && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/damire/space/hash_array_mapped_trie/lib/googletest/googletest/src/gtest-all.cc -o CMakeFiles/gtest.dir/src/gtest-all.cc.s
+	cd /home/damire/space/hash_array_mapped_trie/lib/googletest-release/googletest && /usr/bin/c++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /home/damire/space/hash_array_mapped_trie/lib/googletest/googletest/src/gtest-all.cc -o CMakeFiles/gtest.dir/src/gtest-all.cc.s
 
 # Object files for target gtest
 gtest_OBJECTS = \
@@ -93,19 +93,19 @@ gtest_EXTERNAL_OBJECTS =
 lib/libgtest.a: googletest/CMakeFiles/gtest.dir/src/gtest-all.cc.o
 lib/libgtest.a: googletest/CMakeFiles/gtest.dir/build.make
 lib/libgtest.a: googletest/CMakeFiles/gtest.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/damire/space/hash_array_mapped_trie/lib/googletest/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX static library ../lib/libgtest.a"
-	cd /home/damire/space/hash_array_mapped_trie/lib/googletest/googletest && $(CMAKE_COMMAND) -P CMakeFiles/gtest.dir/cmake_clean_target.cmake
-	cd /home/damire/space/hash_array_mapped_trie/lib/googletest/googletest && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/gtest.dir/link.txt --verbose=$(VERBOSE)
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir=/home/damire/space/hash_array_mapped_trie/lib/googletest-release/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX static library ../lib/libgtest.a"
+	cd /home/damire/space/hash_array_mapped_trie/lib/googletest-release/googletest && $(CMAKE_COMMAND) -P CMakeFiles/gtest.dir/cmake_clean_target.cmake
+	cd /home/damire/space/hash_array_mapped_trie/lib/googletest-release/googletest && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/gtest.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.
 googletest/CMakeFiles/gtest.dir/build: lib/libgtest.a
 .PHONY : googletest/CMakeFiles/gtest.dir/build
 
 googletest/CMakeFiles/gtest.dir/clean:
-	cd /home/damire/space/hash_array_mapped_trie/lib/googletest/googletest && $(CMAKE_COMMAND) -P CMakeFiles/gtest.dir/cmake_clean.cmake
+	cd /home/damire/space/hash_array_mapped_trie/lib/googletest-release/googletest && $(CMAKE_COMMAND) -P CMakeFiles/gtest.dir/cmake_clean.cmake
 .PHONY : googletest/CMakeFiles/gtest.dir/clean
 
 googletest/CMakeFiles/gtest.dir/depend:
-	cd /home/damire/space/hash_array_mapped_trie/lib/googletest && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/damire/space/hash_array_mapped_trie/lib/googletest /home/damire/space/hash_array_mapped_trie/lib/googletest/googletest /home/damire/space/hash_array_mapped_trie/lib/googletest /home/damire/space/hash_array_mapped_trie/lib/googletest/googletest /home/damire/space/hash_array_mapped_trie/lib/googletest/googletest/CMakeFiles/gtest.dir/DependInfo.cmake --color=$(COLOR)
+	cd /home/damire/space/hash_array_mapped_trie/lib/googletest-release && $(CMAKE_COMMAND) -E cmake_depends "Unix Makefiles" /home/damire/space/hash_array_mapped_trie/lib/googletest /home/damire/space/hash_array_mapped_trie/lib/googletest/googletest /home/damire/space/hash_array_mapped_trie/lib/googletest-release /home/damire/space/hash_array_mapped_trie/lib/googletest-release/googletest /home/damire/space/hash_array_mapped_trie/lib/googletest-release/googletest/CMakeFiles/gtest.dir/DependInfo.cmake --color=$(COLOR)
 .PHONY : googletest/CMakeFiles/gtest.dir/depend
 
