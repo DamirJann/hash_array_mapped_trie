@@ -4,6 +4,8 @@ project(tests)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_FLAGS -pthread)
 
+add_subdirectory(../lib/googletest-release/googletest/googletest googletests)
+
 include_directories(
         ../lib/benchmark-release/include
         ../lib/benchmark-release/build/include

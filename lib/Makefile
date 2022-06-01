@@ -25,7 +25,7 @@ googletest:
 	cd googletest-release && \
     cmake ../googletest && \
 	make  && \
-	cp -r  ../googletest/googletest/include googletest/include
+	cp -r  ../googletest ./googletest
 
 clean:
 	rm -rf
