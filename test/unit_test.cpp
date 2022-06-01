@@ -11,7 +11,7 @@
 #include <gtest/gtest.h>
 #include <random>
 
-int averageIterationCount = 100'000;
+int averageIterationCount = 70'000;
 
 TEST(BITMAP, HAPPY_FLOW__IS_SET_TRUE_AT_THE_BEGINNING_OF_BITMAP) {
     // arrange
@@ -137,35 +137,6 @@ TEST(CNode, HAPPY_FLOW_GET__NODE_LOOKUP_NOT_FOUND) {
     // assert
     ASSERT_EQ(node.getSubNode(0b11111), nullptr);
 }
-
-// BEFORE: i1 -> c1
-//  AFTER: i1 -> c1 -> i2 -> c2 -> i3 -> c3 -> k1, k2
-TEST(TRIE, HAPPY_FLOW__INSERT_TO_EMPTY_TRIE) {
-    // arrange
-    Hamt<string, int> hamt;
-
-    // act
-    hamt.insert("abc", 1);
-
-    // assert
-    ASSERT_NE(hamt.root->main.load()->getSubNode(8), nullptr);
-    ASSERT_EQ(hamt.root->main.load()->getSubNode(0), nullptr);
-}
-
-//TEST(TRIE, HAPPY_FLOW__INSERT_TWO_KEYS_WITH_EQUAL_HASH) {
-//    // arrange
-//    Hamt<string, int> hamt;
-//
-//    // act
-//    auto equalHash = findTwoKeyWithEqualHash();
-//    hamt.insert(equalHash.first, 1);
-//    hamt.insert(equalHash.second, 2);
-//
-//
-//
-//    ASSERT_EQ(hamt.lookup(equalHash.first), (hamt.createSuccessfulLookupResult(1)));
-//    ASSERT_EQ(hamt.lookup(equalHash.second), (hamt.createSuccessfulLookupResult(2)));
-//}
 
 TEST(TRIE, HAPPY_FLOW__CONTRACTED_CHECK_WITH_THREE_KEYS) {
     // arrange
