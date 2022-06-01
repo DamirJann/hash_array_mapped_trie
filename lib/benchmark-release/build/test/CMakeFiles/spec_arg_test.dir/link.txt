@@ -1,0 +1,1 @@
+/usr/bin/c++   -std=c++11  -Wall  -Wextra  -Wshadow  -Wfloat-equal  -pedantic  -pedantic-errors  -fstrict-aliasing  -Wno-deprecated-declarations  -Wstrict-aliasing -O3  -Werror  -Wno-deprecated CMakeFiles/spec_arg_test.dir/spec_arg_test.cc.o -o spec_arg_test  ../src/libbenchmark_main.a -pthread ../src/libbenchmark.a -pthread -lrt 

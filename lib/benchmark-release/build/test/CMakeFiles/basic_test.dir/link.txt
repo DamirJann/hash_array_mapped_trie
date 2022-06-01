@@ -1,0 +1,1 @@
+/usr/bin/c++   -std=c++11  -Wall  -Wextra  -Wshadow  -Wfloat-equal  -pedantic  -pedantic-errors  -fstrict-aliasing  -Wno-deprecated-declarations  -Wstrict-aliasing -O3  -Werror  -Wno-deprecated CMakeFiles/basic_test.dir/basic_test.cc.o -o basic_test  ../src/libbenchmark_main.a -pthread ../src/libbenchmark.a -pthread -lrt 

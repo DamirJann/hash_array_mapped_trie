@@ -1,0 +1,1 @@
+/usr/bin/c++   -std=c++11  -Wall  -Wextra  -Wshadow  -Wfloat-equal  -pedantic  -pedantic-errors  -fstrict-aliasing  -Wno-deprecated-declarations  -Wstrict-aliasing -O3  -Werror  -Wno-deprecated CMakeFiles/memory_manager_test.dir/memory_manager_test.cc.o -o memory_manager_test  liboutput_test_helper.a ../src/libbenchmark_main.a -pthread ../src/libbenchmark.a -pthread -lrt 
