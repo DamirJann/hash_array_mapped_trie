@@ -297,7 +297,6 @@ public:
 
     bool insert(K key, V value) {
         mx.lock();
-
         if (root == nullptr) {
             root = new INode<K, V>(new CNode<K, V>());
         }

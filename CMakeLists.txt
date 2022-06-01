@@ -9,10 +9,3 @@ set(CMAKE_CXX_FLAGS -pthread)
 add_executable(
         hamt include/visualize.h main.cpp src/utils.cpp
 )
-
-
-#target_compile_options(
-#        hamt PRIVATE
-#        -Wall -Wextra -pedantic -Werror
-#)
-
