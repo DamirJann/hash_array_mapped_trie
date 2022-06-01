@@ -1,0 +1,4 @@
+/snap/clion/190/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_MAKE_PROGRAM=/snap/clion/190/bin/ninja/linux/ninja --profiling-format=google-trace --profiling-output=CMakeFiles/clion-event-trace.json -G Ninja -S /home/damire/space/hash_array_mapped_trie -B /home/damire/space/hash_array_mapped_trie/cmake-build-debug-event-trace
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /home/damire/space/hash_array_mapped_trie/cmake-build-debug-event-trace

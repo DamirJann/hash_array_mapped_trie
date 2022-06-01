@@ -1,0 +1,1 @@
+/usr/bin/c++ --coverage -g CMakeFiles/run_tests.dir/test.cpp.o CMakeFiles/run_tests.dir/home/damire/space/hash_array_mapped_trie/src/utils.cpp.o -o run_tests  lib/libgtest.a lib/libgtest_main.a lib/libgtest.a -lpthread 
