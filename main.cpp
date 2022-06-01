@@ -5,14 +5,15 @@
 int main(){
     Hamt<string, int> trie;
 
-    for (int i = 0; i < 100; i++){
+    for (int i = 0; i < 30; i++){
         fprintf(stdout, "for k%d hash is %lu\n", i, generateSimpleHash("k"+ to_string(i)));
         trie.insert("k"+ to_string(i), i);
     }
-    for (int i = 0; i < 100; i++){
-        cout << trie.remove("k"+ to_string(i));
-        cout << " removed " << i << endl;
-    }
+    re
+//    for (int i = 0; i < 100; i++){
+//        cout << trie.remove("k"+ to_string(i));
+//        cout << " removed " << i << endl;
+//    }
 
 
 
