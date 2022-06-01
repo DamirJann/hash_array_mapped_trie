@@ -13,6 +13,7 @@ int insertCount = stoi(std::getenv("INSERT_COUNT"));
 // -----------------------------------------------------------------
 
 static void Hamt_Insert(benchmark::State &state) {
+    Hamt<int, int> hamt;
     for (auto _: state) {
         Hamt<int, int> hamt;
         vector<pthread_t> thread(threadCount);

@@ -4,7 +4,7 @@
 GENERAL_NAME=general.csv
 FOLDER_NAME=benchmark_result
 TEST_COUNT=100
-export INSERT_COUNT=10000
+export INSERT_COUNT=100000
 export THREAD_COUNT=12
 
 rm -rf ${FOLDER_NAME}
@@ -12,7 +12,7 @@ mkdir ${FOLDER_NAME}
 
 test_names=(
     Hamt_Insert
-    Set_Insert
+#    Set_Insert
 #    MichaelKVList_Insert
 #
 #    Hamt_Lookup
