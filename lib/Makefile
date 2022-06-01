@@ -22,8 +22,8 @@ googletest:
 	mkdir googletest-release
 	cd googletest-release && \
     cmake ../googletest && \
-    make . && \
-    cp -r  ../googletest/googletest/include googletest/include
+	make  && \
+	cp -r  ../googletest/googletest/include googletest/include
 
 clean:
 	rm -rf
