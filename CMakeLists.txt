@@ -5,6 +5,7 @@ set(CMAKE_CXX_STANDARD 14)
 
 set(CMAKE_CXX_FLAGS -pthread)
 
+build_)
 # MAIN TARGET
 add_executable(
         hamt include/visualize.h main.cpp src/utils.cpp
