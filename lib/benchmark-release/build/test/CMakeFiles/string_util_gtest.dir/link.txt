@@ -1,1 +1,0 @@
-/usr/bin/c++   -std=c++11  -Wall  -Wextra  -Wshadow  -Wfloat-equal  -pedantic  -pedantic-errors  -fstrict-aliasing  -Wno-deprecated-declarations  -Wstrict-aliasing -O3  -Werror  -Wno-deprecated CMakeFiles/string_util_gtest.dir/string_util_gtest.cc.o -o string_util_gtest  ../src/libbenchmark.a ../lib/libgmock_main.a -pthread -lrt ../lib/libgmock.a ../lib/libgtest.a -pthread 

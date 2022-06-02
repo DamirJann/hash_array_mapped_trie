@@ -1,1 +1,0 @@
-/usr/bin/c++   -std=c++11  -Wall  -Wextra  -Wshadow  -Wfloat-equal  -pedantic  -pedantic-errors  -fstrict-aliasing  -Wno-deprecated-declarations  -Wstrict-aliasing -O3  -Werror  -Wno-deprecated CMakeFiles/register_benchmark_test.dir/register_benchmark_test.cc.o -o register_benchmark_test  ../src/libbenchmark_main.a -pthread ../src/libbenchmark.a -pthread -lrt 
