@@ -24,8 +24,7 @@ googletest:
 	mkdir googletest-release
 	cd googletest-release && \
     cmake ../googletest && \
-	make  && \
-	cp -r  ../googletest ./googletest
+	make
 
 clean:
 	rm -rf
