@@ -4,13 +4,20 @@ project(tests)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_FLAGS -pthread)
 
-add_subdirectory(../lib/googletest googletests)
+#add_subdirectory(../lib/googletest-release/googletest googletests)
 
-include_directories(../../benchmark/include ../../benchmark/build/include ../../libcds)
-link_directories(../../benchmark/build/src ../../libcds/libcds-debug/bin)
+include_directories(
+        ../lib/benchmark-release/include
+        ../lib/benchmark-release/build/include
+        ../lib/libcds-release/libcds
+        ../lib/googletest/googletest/include
+)
+link_directories(
+        ../lib/benchmark-release/build/src
+        ../lib/libcds-release/bin
+        ../lib/googletest-release/lib
+)
 
-
-# TEST TARGET
 add_executable(
         unit_test unit_test.cpp ../src/utils.cpp
 )
