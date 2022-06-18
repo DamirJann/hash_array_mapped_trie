@@ -261,7 +261,7 @@ template<class K, class V>
 class Trie {
 private:
     INode<K, V> *root;
-    mutex mx;
+    mutex mutex;
 public:
 
     Trie() {
@@ -273,38 +273,40 @@ public:
     }
 
     LookupResult lookup(K k) {
-        mx.lock();
+        mutex.lock();
 
         if (root == nullptr) {
             root = new INode<K, V>(new CNode<K, V>());
         }
         LookupResult res = lookup(root, k, generateSimpleHash(k), 0);
-        mx.unlock();
+        mutex.unlock();
         return res;
     }
 
     bool remove(K key) {
-        mx.lock();
+        mutex.lock();
 
         if (root == nullptr) {
             root = new INode<K, V>(new CNode<K, V>());
         }
         bool res = this->remove(nullptr, root, key, generateSimpleHash(key), 0);
-        mx.unlock();
+        mutex.unlock();
         return res;
     }
 
 
-    bool insert(K key, V value) {
-        mx.lock();
-
+    bool insert(K key, V value)
+    {
+        // начало критической секции
+        mutex.lock();
         if (root == nullptr) {
             root = new INode<K, V>(new CNode<K, V>());
         }
         SNode<K, V> *subNode = createSNode(key, value, generateSimpleHash(key));
+        // потокобезопасная вставка
         insert(root, subNode, 0);
-        mx.unlock();
-        return true;
+        // конец критической секции
+        mutex.unlock();
     }
 
 
