@@ -1,7 +1,7 @@
 #define protected public
 #define private   public
 
-#include "trie.h"
+#include "hamt.h"
 
 #undef protected
 #undef private
@@ -75,7 +75,7 @@ void walk_and_collect(Height<K, V> currHeight, vector<Height<K, V>> &hs, vector<
 
 
 template<class K, class V>
-void visualize(ofstream &f, Trie<K, V> *trie) {
+void visualize(ofstream &f, Hamt<K, V> *trie) {
     vector<Height<K, V>> heights = {trie->getRoot()};
     vector<Edge> edges;
     walk_and_collect(heights[0], heights, edges);

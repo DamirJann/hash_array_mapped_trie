@@ -9,18 +9,6 @@
 
 using namespace std;
 
-
-//string fmt_assert_failed = "Assert failed: %s != %s";
-//const char* fmt_thread_log = "LOG[%d] %s\n";
-
-template<class A, class B>
-void ASSERT_EQUAL(A got,B exp){
-    if (got != exp){
-
-    }
-}
-
-
 uint64_t generateSimpleHash(string);
 uint64_t generateSimpleHash(int);
 

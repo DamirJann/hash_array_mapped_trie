@@ -1,7 +1,5 @@
-# Container for building and testing cmake projects v3.16
 FROM ubuntu:18.04
 
-# get the latest cmake release
 RUN apt-get -y update
 RUN apt-get -y install software-properties-common git wget clang-10
 RUN wget -O - https://apt.kitware.com/keys/kitware-archive-latest.asc 2>/dev/null | apt-key add -
@@ -16,3 +14,4 @@ COPY ./ /hamt
 RUN chmod +x entrypoint.sh
 
 ENTRYPOINT ["/entrypoint.sh"]
+
